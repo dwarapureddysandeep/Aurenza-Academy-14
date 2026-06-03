@@ -1,0 +1,222 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  TRAINER
+  ADMIN
+  COUNSELOR
+  PLACEMENT_OFFICER
+  STAFF
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  INTERESTED
+  CONVERTED
+  LOST
+}
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  phone        String?
+  role         Role          @default(STUDENT)
+  bio          String?
+  avatar       String?       // initials or url
+  permissions  String[]      @default([]) // for staff members: e.g. ["leads", "courses", "testimonials"]
+  enrollments  Enrollment[]
+  payments     Payment[]
+  certificates Certificate[]
+  reviews      Review[]
+  blogs        Blog[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Category {
+  id      String   @id @default(uuid())
+  name    String
+  slug    String   @unique
+  courses Course[]
+}
+
+model Course {
+  id           String       @id @default(uuid())
+  name         String
+  slug         String       @unique
+  categoryId   String
+  category     Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  duration     String
+  level        String
+  price        Float
+  rating       Float        @default(5.0)
+  reviewsCount Int          @default(0)
+  image        String
+  syllabus     String       // JSON array of modules
+  faqs         String       // JSON array of FAQs
+  mentorName   String
+  mentorExp    String
+  mentorAvatar String
+  mentorBio    String
+  batches      Batch[]
+  enrollments  Enrollment[]
+  payments     Payment[]
+  certificates Certificate[]
+  reviews      Review[]
+  createdAt    DateTime     @default(now())
+}
+
+model Trainer {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  avatar    String?
+  bio       String?
+  specialty String?
+  batches   Batch[]
+  createdAt DateTime @default(now())
+}
+
+model Batch {
+  id         String   @id @default(uuid())
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  trainerId  String
+  trainer    Trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  startDate  String   // readable date string, e.g. "June 15, 2026"
+  timeSlot   String   // e.g. "7:00 PM - 9:00 PM IST"
+  seatsTotal Int      @default(30)
+  seatsLeft  Int      @default(30)
+  linkZoom   String   @default("https://zoom.us/j/mock-meeting")
+  createdAt  DateTime @default(now())
+}
+
+model Enrollment {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId   String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress   Int      @default(0) // 0 to 100
+  lastLesson String   @default("Introduction")
+  enrolledAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+model Payment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  amount    Float
+  status    String   @default("Success") // "Success", "Pending", "Failed"
+  txId      String   @unique
+  date      DateTime @default(now())
+}
+
+model Lead {
+  id        String     @id @default(uuid())
+  name      String
+  email     String
+  phone     String
+  course    String
+  message   String?
+  status    LeadStatus @default(NEW)
+  notes     String?    @default("")
+  createdAt DateTime   @default(now())
+}
+
+model CorporateLead {
+  id          String   @id @default(uuid())
+  name        String
+  company     String
+  email       String
+  phone       String
+  size        String   // e.g. "10-50 employees"
+  message     String?
+  status      String   @default("New") // "New", "Contacted", "Proposal Sent", "Closed"
+  createdAt   DateTime @default(now())
+}
+
+model Webinar {
+  id                 String   @id @default(uuid())
+  title              String
+  description        String
+  speaker            String
+  date               String   // e.g. "June 25, 2026"
+  time               String   // e.g. "6:00 PM"
+  link               String   @default("https://zoom.us/j/mock-webinar")
+  registrationsCount Int      @default(0)
+  status             String   @default("Upcoming") // "Upcoming", "Live", "Completed"
+  createdAt          DateTime @default(now())
+}
+
+model Blog {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @unique
+  content   String   // Markdown or HTML
+  category  String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  image     String
+  tags      String[] @default([])
+  views     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Testimonial {
+  id       String  @id @default(uuid())
+  name     String
+  role     String
+  quote    String
+  rating   Int     @default(5)
+  featured Boolean @default(true)
+  initial  String
+}
+
+model Roadmap {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  steps       String   // JSON string of timeline nodes
+}
+
+model Certificate {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId       String
+  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  name           String   // recipient name
+  courseName     String
+  completionDate String
+  certId         String   @unique // cryptographically unique hash or string
+  createdAt      DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  rating    Int      @default(5)
+  comment   String
+  createdAt DateTime @default(now())
+}

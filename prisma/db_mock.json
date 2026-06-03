@@ -1,0 +1,460 @@
+{
+  "users": [
+    {
+      "id": "user-admin",
+      "email": "aurenzaacademy@gmail.com",
+      "password": "aur_hash_aurenza_admin",
+      "name": "Aurenza Admin",
+      "phone": "+91 7013057827",
+      "role": "ADMIN",
+      "bio": "Executive Academy Administrator",
+      "avatar": "AA",
+      "permissions": [
+        "leads",
+        "courses",
+        "testimonials",
+        "company",
+        "staff"
+      ],
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "user-student",
+      "email": "student@aurenzaacademy.com",
+      "password": "aur_hash_student_pass",
+      "name": "Sandeep Kumar",
+      "phone": "+91 9876543210",
+      "role": "STUDENT",
+      "bio": "Aspiring Full Stack Engineer",
+      "avatar": "SK",
+      "permissions": [],
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "user-trainer",
+      "email": "trainer@aurenzaacademy.com",
+      "password": "aur_hash_trainer_pass",
+      "name": "Dr. Ramesh Kumar",
+      "phone": "+91 9999988888",
+      "role": "TRAINER",
+      "bio": "Ex-Amazon Senior Java Architect",
+      "avatar": "RK",
+      "permissions": [],
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "categories": [
+    { "id": "cat-1", "name": "Project Management", "slug": "project-management" },
+    { "id": "cat-2", "name": "Data Science", "slug": "data-science" },
+    { "id": "cat-3", "name": "AI & Machine Learning", "slug": "ai-machine-learning" },
+    { "id": "cat-4", "name": "Cloud Computing", "slug": "cloud" },
+    { "id": "cat-5", "name": "DevOps", "slug": "devops" },
+    { "id": "cat-6", "name": "Cyber Security", "slug": "cyber-security" },
+    { "id": "cat-7", "name": "Full Stack Development", "slug": "full-stack" },
+    { "id": "cat-8", "name": "Digital Marketing", "slug": "digital-marketing" }
+  ],
+  "courses": [
+    {
+      "id": "course-java",
+      "name": "Java Full Stack Development",
+      "slug": "java-full-stack-development",
+      "categoryId": "cat-7",
+      "categoryName": "Full Stack Development",
+      "duration": "6 months",
+      "level": "Beginner -> Advanced",
+      "price": 34999,
+      "rating": 4.8,
+      "reviewsCount": 342,
+      "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Dr. Ramesh Kumar",
+      "mentorExp": "12+ Years Exp at Oracle & Amazon",
+      "mentorAvatar": "R",
+      "mentorBio": "Ex-Amazon Senior Engineer specializing in high-performance Java systems.",
+      "syllabus": "[{\"module\":\"Module 1: Core Java Programming\",\"details\":\"OOP principles, Collections Framework, Exception Handling, Multithreading & Stream API.\"},{\"module\":\"Module 2: Advanced Java & Database\",\"details\":\"JDBC, MySQL foundations, Hibernate ORM, and database connection pools.\"},{\"module\":\"Module 3: Enterprise Spring Framework\",\"details\":\"Spring Core, Spring Boot, Spring Data JPA, and RESTful Microservices.\"},{\"module\":\"Module 4: Frontend Integration\",\"details\":\"HTML5, CSS3, JavaScript ES6, and connecting React frontends with Spring Boot.\"},{\"module\":\"Module 5: Testing, Security & Cloud\",\"details\":\"JUnit testing, Spring Security, JWT, Docker, and AWS deployment.\"}]",
+      "faqs": "[{\"q\":\"Are there any prerequisites for this course?\",\"a\":\"No, this course starts completely from scratch. Basic programming familiarity is helpful but not mandatory.\"},{\"q\":\"Is there a placement assistance guarantee?\",\"a\":\"Yes! We offer extensive mock interview sessions, resume polishing, and referrals with 500+ corporate hiring partners.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "course-frontend",
+      "name": "Frontend Development (React & Next.js)",
+      "slug": "frontend-development-react-nextjs",
+      "categoryId": "cat-7",
+      "categoryName": "Full Stack Development",
+      "duration": "4 months",
+      "level": "Beginner",
+      "price": 24999,
+      "rating": 4.9,
+      "reviewsCount": 289,
+      "image": "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Sarah D'Souza",
+      "mentorExp": "8+ Years Exp at Adobe & Flipkart",
+      "mentorAvatar": "S",
+      "mentorBio": "UI Architect focused on rendering optimization, custom animations, Framer Motion, and design systems.",
+      "syllabus": "[{\"module\":\"Module 1: UI Core & Layouts\",\"details\":\"Semantic HTML5, CSS Flexbox & Grid, Responsive Design, and Tailwind CSS.\"},{\"module\":\"Module 2: Modern JavaScript (ES6+)\",\"details\":\"DOM manipulation, Asynchronous programming, Fetch API, and Functional structures.\"},{\"module\":\"Module 3: Deep React Foundations\",\"details\":\"Virtual DOM, JSX, State & Props, Custom Hooks, Context API, and State Managers.\"},{\"module\":\"Module 4: Modern Production Next.js\",\"details\":\"App Router, Server Actions, SSR vs SSG, Routing, SEO optimization, and Image components.\"}]",
+      "faqs": "[{\"q\":\"Will I build real projects?\",\"a\":\"Absolutely! You will build 6 real-world web applications including a premium e-commerce portal and a SaaS dashboard.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "course-aiml",
+      "name": "AI & Machine Learning Engineering",
+      "slug": "ai-machine-learning-engineering",
+      "categoryId": "cat-3",
+      "categoryName": "AI & Machine Learning",
+      "duration": "5 months",
+      "level": "Intermediate",
+      "price": 44999,
+      "rating": 4.9,
+      "reviewsCount": 198,
+      "image": "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Dr. Vivek Sharma",
+      "mentorExp": "Ph.D. in AI, ex-Google Brain Scientist",
+      "mentorAvatar": "V",
+      "mentorBio": "Researcher focused on NLP transformer models, generative architectures, and scaling neural network computing parameters.",
+      "syllabus": "[{\"module\":\"Module 1: Mathematical Foundations\",\"details\":\"Calculus optimization, Gradient Descent, Vector Calculus, and Probability.\"},{\"module\":\"Module 2: Deep Learning & Neural Networks\",\"details\":\"Perceptrons, Backpropagation, MLP, and TensorFlow/PyTorch ecosystems.\"},{\"module\":\"Module 3: Computer Vision (CV)\",\"details\":\"CNNs, Image Segmentation, OpenCV, YOLO model object detection.\"},{\"module\":\"Module 4: Natural Language Processing (NLP)\",\"details\":\"LSTMs, Transformers, Attention mechanism, HuggingFace transformers, and LLM fine-tuning.\"}]",
+      "faqs": "[{\"q\":\"Can I do this course part-time?\",\"a\":\"Yes! All lectures are live-streamed on weekends and recorded in 4K resolution for asynchronous self-paced review.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "course-aws",
+      "name": "AWS Solutions Architect",
+      "slug": "aws-solutions-architect",
+      "categoryId": "cat-4",
+      "categoryName": "Cloud Computing",
+      "duration": "40 Hours",
+      "level": "Intermediate",
+      "price": 24999,
+      "rating": 4.8,
+      "reviewsCount": 2500,
+      "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Sarah D'Souza",
+      "mentorExp": "8+ Years Exp at Adobe & AWS Mentor",
+      "mentorAvatar": "S",
+      "mentorBio": "UI & Cloud Architect focused on elastic solutions models and server infrastructure.",
+      "syllabus": "[{\"module\":\"Module 1: Cloud Principles\",\"details\":\"Introduction to AWS global compute systems, regions, Availability Zones, and IAM policies.\"},{\"module\":\"Module 2: Virtual Server Compute & Elastic IP\",\"details\":\"Configuring EC2 machines, Elastic Block Storage, and load balancing routers.\"},{\"module\":\"Module 3: Virtual Networks & Subnets\",\"details\":\"Configuring private subnets, security groups, route tables, and VPC architectures.\"},{\"module\":\"Module 4: Relational Databases & Cache\",\"details\":\"Deploying Amazon RDS databases, DynamoDB documents databases, and ElastiCache.\"}]",
+      "faqs": "[{\"q\":\"Is exam fee included?\",\"a\":\"No, the official AWS Certification exam fee is billed separately. We provide exam preparation quizzes and referrals.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "course-pmp",
+      "name": "PMP Certification",
+      "slug": "pmp-certification",
+      "categoryId": "cat-1",
+      "categoryName": "Project Management",
+      "duration": "35 Hours",
+      "level": "Intermediate",
+      "price": 18999,
+      "rating": 4.9,
+      "reviewsCount": 3420,
+      "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Dr. Ramesh Kumar",
+      "mentorExp": "12+ Years Exp, PMP Director",
+      "mentorAvatar": "R",
+      "mentorBio": "Ex-Director specializing in high-throughput project management frameworks.",
+      "syllabus": "[{\"module\":\"Module 1: Professional Project Frameworks\",\"details\":\"Project Lifecycle management, Agile integrations, and Business environments mappings.\"},{\"module\":\"Module 2: People and Teams Management\",\"details\":\"Leadership traits, conflict resolutions, virtual teams management, and KPI targets.\"},{\"module\":\"Module 3: Project Processes & Controls\",\"details\":\"Scheduling baselines, budget tracking, risk response protocols, and quality audits.\"}]",
+      "faqs": "[{\"q\":\"Does this course provide PDUs?\",\"a\":\"Yes! This course gives you the official 35 Contact Hours/PDUs certificates required to sit for the PMP exam.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "course-csm",
+      "name": "Certified ScrumMaster (CSM)",
+      "slug": "certified-scrummaster-csm",
+      "categoryId": "cat-1",
+      "categoryName": "Project Management",
+      "duration": "16 Hours",
+      "level": "Beginner",
+      "price": 14999,
+      "rating": 4.9,
+      "reviewsCount": 4120,
+      "image": "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Sarah D'Souza",
+      "mentorExp": "Certified Scrum Trainer (CST)",
+      "mentorAvatar": "S",
+      "mentorBio": "Product owner and trainer focused on Scrum agile frameworks and release sprints.",
+      "syllabus": "[{\"module\":\"Module 1: Scrum Values & Ceremonies\",\"details\":\"Scrum core values, Sprint planning, Daily Standups, Sprint Review, and Retrospectives.\"},{\"module\":\"Module 2: Scrum Team Roles\",\"details\":\"Scrum Master tasks, Product Owner parameters, and developers responsibilities.\"},{\"module\":\"Module 3: Product Backlogs & Estimations\",\"details\":\"User stories mapping, backlog refinement cycles, and story points estimation checks.\"}]",
+      "faqs": "[{\"q\":\"Is Scrum Alliance fee included?\",\"a\":\"Yes! The official Scrum Alliance certification fee and two exam attempts are fully covered in the tuition fee.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "course-azure",
+      "name": "Microsoft Azure Administrator",
+      "slug": "microsoft-azure-administrator",
+      "categoryId": "cat-4",
+      "categoryName": "Cloud Computing",
+      "duration": "40 Hours",
+      "level": "Intermediate",
+      "price": 22999,
+      "rating": 4.8,
+      "reviewsCount": 1850,
+      "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Sarah D'Souza",
+      "mentorExp": "Azure Enterprise Consultant",
+      "mentorAvatar": "S",
+      "mentorBio": "Enterprise consultant specializing in hybrid cloud computing configurations and Active Directory rules.",
+      "syllabus": "[{\"module\":\"Module 1: Azure Identities and Governance\",\"details\":\"Configuring Azure Active Directory (AD), Role-Based Access Controls (RBAC), and subscriptions.\"},{\"module\":\"Module 2: Manage Storage Solutions\",\"details\":\"Blob storage configurations, Azure Files synchronization, and storage security check keys.\"},{\"module\":\"Module 3: Azure Virtual Machines & Hosting\",\"details\":\"Deploying VMs, virtual network subnets, Network Security Groups, and DNS routing.\"}]",
+      "faqs": "[{\"q\":\"Which exam does this course prepare for?\",\"a\":\"This course maps to the Microsoft AZ-104 certification exam curriculum.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "course-dsai",
+      "name": "Data Science & AI Bootcamp",
+      "slug": "data-science-ai-bootcamp",
+      "categoryId": "cat-2",
+      "categoryName": "Data Science",
+      "duration": "120 Hours",
+      "level": "Beginner -> Advanced",
+      "price": 39999,
+      "rating": 4.9,
+      "reviewsCount": 2890,
+      "image": "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Dr. Vivek Sharma",
+      "mentorExp": "Ph.D. in Data Analytics, Ex-Researcher",
+      "mentorAvatar": "V",
+      "mentorBio": "Ex-Google Scientist focused on data engineering, database schemas, and AI algorithm analytics.",
+      "syllabus": "[{\"module\":\"Module 1: Python for Data Analysis\",\"details\":\"Numpy arrays, Pandas DataFrames, and Matplotlib data charts visualization.\"},{\"module\":\"Module 2: Applied Statistics & Probability\",\"details\":\"Hypothesis tests, Regression curves modeling, and probability metrics distributions.\"},{\"module\":\"Module 3: Machine Learning & NLP\",\"details\":\"Supervised learning (classification, decision trees) and LLM prompt engineering models.\"}]",
+      "faqs": "[{\"q\":\"Do I need math background?\",\"a\":\"Basic high-school algebra is helpful. We seed all mathematical formulas from scratch in Module 2.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "course-devops",
+      "name": "DevOps Engineer Program",
+      "slug": "devops-engineer-program",
+      "categoryId": "cat-5",
+      "categoryName": "DevOps",
+      "duration": "50 Hours",
+      "level": "Intermediate",
+      "price": 29999,
+      "rating": 4.8,
+      "reviewsCount": 1980,
+      "image": "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=800&q=80",
+      "mentorName": "Dr. Ramesh Kumar",
+      "mentorExp": "AWS Certified DevOps Director",
+      "mentorAvatar": "R",
+      "mentorBio": "Senior Architect focused on automated integration pipelines, Kubernetes clustering, and Terraform configuration tools.",
+      "syllabus": "[{\"module\":\"Module 1: Container Orchestration with Docker\",\"details\":\"Writing Dockerfiles, managing networks, volumes, and composing multi-container layouts.\"},{\"module\":\"Module 2: CI/CD Pipeline Automation\",\"details\":\"Configuring Jenkins scripts, GitHub actions hooks, and automated build testing flows.\"},{\"module\":\"Module 3: Infrastructure as Code (IaC)\",\"details\":\"Deploying AWS servers, VPC networks, and route rules using Terraform states variables.\"}]",
+      "faqs": "[{\"q\":\"Do we deploy to live servers?\",\"a\":\"Yes! Learners deploy their homework configurations onto our private sandbox AWS testing servers.\"}]",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "trainers": [
+    {
+      "id": "trainer-1",
+      "name": "Dr. Ramesh Kumar",
+      "email": "trainer@aurenzaacademy.com",
+      "avatar": "RK",
+      "bio": "Ex-Amazon Senior Java Architect specializing in distributed web engineering.",
+      "specialty": "Java Full Stack & System Design",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "trainer-2",
+      "name": "Sarah D'Souza",
+      "email": "sarah@aurenzaacademy.com",
+      "avatar": "SD",
+      "bio": "UI Architect focused on rendering optimization and custom animations.",
+      "specialty": "React, Next.js, and CSS Systems",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "batches": [
+    {
+      "id": "batch-1",
+      "courseId": "course-java",
+      "trainerId": "trainer-1",
+      "startDate": "June 15, 2026",
+      "timeSlot": "7:00 PM - 9:00 PM IST",
+      "seatsTotal": 30,
+      "seatsLeft": 22,
+      "linkZoom": "https://zoom.us/j/mock-java-meeting",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "batch-2",
+      "courseId": "course-frontend",
+      "trainerId": "trainer-2",
+      "startDate": "June 10, 2026",
+      "timeSlot": "8:00 AM - 10:00 AM IST",
+      "seatsTotal": 25,
+      "seatsLeft": 18,
+      "linkZoom": "https://zoom.us/j/mock-frontend-meeting",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "batch-aws",
+      "courseId": "course-aws",
+      "trainerId": "trainer-2",
+      "startDate": "June 18, 2026",
+      "timeSlot": "7:00 PM - 9:00 PM IST",
+      "seatsTotal": 30,
+      "seatsLeft": 25,
+      "linkZoom": "https://zoom.us/j/mock-java-meeting",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "batch-pmp",
+      "courseId": "course-pmp",
+      "trainerId": "trainer-1",
+      "startDate": "June 20, 2026",
+      "timeSlot": "8:00 AM - 10:00 AM IST",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-java-meeting",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "batch-csm",
+      "courseId": "course-csm",
+      "trainerId": "trainer-2",
+      "startDate": "June 14, 2026",
+      "timeSlot": "6:00 PM - 8:00 PM IST",
+      "seatsTotal": 30,
+      "seatsLeft": 28,
+      "linkZoom": "https://zoom.us/j/mock-java-meeting",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "batch-azure",
+      "courseId": "course-azure",
+      "trainerId": "trainer-2",
+      "startDate": "June 22, 2026",
+      "timeSlot": "7:00 PM - 9:00 PM IST",
+      "seatsTotal": 30,
+      "seatsLeft": 24,
+      "linkZoom": "https://zoom.us/j/mock-java-meeting",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "batch-dsai",
+      "courseId": "course-dsai",
+      "trainerId": "trainer-1",
+      "startDate": "June 25, 2026",
+      "timeSlot": "9:00 AM - 12:00 PM IST",
+      "seatsTotal": 30,
+      "seatsLeft": 30,
+      "linkZoom": "https://zoom.us/j/mock-java-meeting",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "batch-devops",
+      "courseId": "course-devops",
+      "trainerId": "trainer-1",
+      "startDate": "June 15, 2026",
+      "timeSlot": "8:00 PM - 10:00 PM IST",
+      "seatsTotal": 30,
+      "seatsLeft": 22,
+      "linkZoom": "https://zoom.us/j/mock-java-meeting",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "enrollments": [
+    {
+      "id": "enr-1",
+      "userId": "user-student",
+      "courseId": "course-frontend",
+      "progress": 65,
+      "lastLesson": "Module 3: React Custom Hooks",
+      "enrolledAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "payments": [
+    {
+      "id": "pay-1",
+      "userId": "user-student",
+      "courseId": "course-frontend",
+      "amount": 24999,
+      "status": "Success",
+      "txId": "TXN-MOCK-FED8237",
+      "date": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "leads": [
+    {
+      "id": "lead-1",
+      "name": "Aarav Mehta",
+      "email": "aarav.mehta@gmail.com",
+      "phone": "+91 9123456789",
+      "course": "Java Full Stack Development",
+      "message": "Interested in evening weekend cohorts",
+      "status": "NEW",
+      "notes": "",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "lead-2",
+      "name": "Esha Gupta",
+      "email": "esha.gupta@yahoo.com",
+      "phone": "+91 8234567890",
+      "course": "AI & Machine Learning Engineering",
+      "message": "Looking for scholarship opportunities",
+      "status": "CONTACTED",
+      "notes": "Called today, interested in AI course syllabus.",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "corporateLeads": [],
+  "webinars": [
+    {
+      "id": "webinar-1",
+      "title": "Mastering Generative AI & Large Language Models",
+      "description": "Learn how to build and fine-tune enterprise LLMs from scratch.",
+      "speaker": "Dr. Vivek Sharma",
+      "date": "June 05, 2026",
+      "time": "6:00 PM IST",
+      "link": "https://zoom.us/j/mock-webinar-ai",
+      "registrationsCount": 142,
+      "status": "Upcoming",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "blogs": [
+    {
+      "id": "blog-1",
+      "title": "The Ultimate Next.js 15 App Router Migration Guide",
+      "slug": "nextjs-15-migration-guide",
+      "content": "Next.js 15 introduces dynamic improvements for server actions, styling caches, and compiling speeds. In this guide, we dive deep into how full-stack architects can upgrade existing apps seamlessly.",
+      "category": "Software Development",
+      "authorId": "user-admin",
+      "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80",
+      "tags": [
+        "Next.js",
+        "React 19",
+        "Web Development"
+      ],
+      "views": 310,
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "test-1",
+      "name": "Ananya Sharma",
+      "role": "Software Engineer at Microsoft",
+      "quote": "Got placed at Microsoft with 18 LPA. The intensive roadmap and 1-on-1 industry mock reviews completely changed my trajectory.",
+      "rating": 5,
+      "featured": true,
+      "initial": "A"
+    },
+    {
+      "id": "test-2",
+      "name": "Rohit Verma",
+      "role": "Data Scientist at Amazon",
+      "quote": "Highly structure-driven syllabus. I came from a non-CS engineering background, and within 6 months, pivoted into data engineering.",
+      "rating": 5,
+      "featured": true,
+      "initial": "R"
+    }
+  ],
+  "roadmaps": [],
+  "certificates": [
+    {
+      "id": "cert-1",
+      "userId": "user-student",
+      "courseId": "course-frontend",
+      "name": "Sandeep Kumar",
+      "courseName": "Frontend Development (React & Next.js)",
+      "completionDate": "May 20, 2026",
+      "certId": "AUR-FED-2026-0047",
+      "createdAt": "2026-05-30T11:44:35.491Z"
+    }
+  ],
+  "reviews": []
+}
