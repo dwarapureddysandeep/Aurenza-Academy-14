@@ -41,17 +41,62 @@
       "avatar": "RK",
       "permissions": [],
       "createdAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "user-1780575277778",
+      "name": "Sandeep D",
+      "email": "dwarapureddysandeep@gmail.com",
+      "password": "aur_hash_68f27fd6",
+      "phone": "+919000143076",
+      "role": "STUDENT",
+      "avatar": "SD",
+      "bio": "Aspiring Tech Professional",
+      "permissions": [],
+      "createdAt": "2026-06-04T12:14:37.778Z",
+      "updatedAt": "2026-06-04T12:14:37.778Z"
     }
   ],
   "categories": [
-    { "id": "cat-1", "name": "Project Management", "slug": "project-management" },
-    { "id": "cat-2", "name": "Data Science", "slug": "data-science" },
-    { "id": "cat-3", "name": "AI & Machine Learning", "slug": "ai-machine-learning" },
-    { "id": "cat-4", "name": "Cloud Computing", "slug": "cloud" },
-    { "id": "cat-5", "name": "DevOps", "slug": "devops" },
-    { "id": "cat-6", "name": "Cyber Security", "slug": "cyber-security" },
-    { "id": "cat-7", "name": "Full Stack Development", "slug": "full-stack" },
-    { "id": "cat-8", "name": "Digital Marketing", "slug": "digital-marketing" }
+    {
+      "id": "cat-1",
+      "name": "Project Management",
+      "slug": "project-management"
+    },
+    {
+      "id": "cat-2",
+      "name": "Data Science",
+      "slug": "data-science"
+    },
+    {
+      "id": "cat-3",
+      "name": "AI & Machine Learning",
+      "slug": "ai-machine-learning"
+    },
+    {
+      "id": "cat-4",
+      "name": "Cloud Computing",
+      "slug": "cloud"
+    },
+    {
+      "id": "cat-5",
+      "name": "DevOps",
+      "slug": "devops"
+    },
+    {
+      "id": "cat-6",
+      "name": "Cyber Security",
+      "slug": "cyber-security"
+    },
+    {
+      "id": "cat-7",
+      "name": "Full Stack Development",
+      "slug": "full-stack"
+    },
+    {
+      "id": "cat-8",
+      "name": "Digital Marketing",
+      "slug": "digital-marketing"
+    }
   ],
   "courses": [
     {
@@ -70,7 +115,7 @@
       "mentorExp": "12+ Years Exp at Oracle & Amazon",
       "mentorAvatar": "R",
       "mentorBio": "Ex-Amazon Senior Engineer specializing in high-performance Java systems.",
-      "syllabus": "[{\"module\":\"Module 1: Core Java Programming\",\"details\":\"OOP principles, Collections Framework, Exception Handling, Multithreading & Stream API.\"},{\"module\":\"Module 2: Advanced Java & Database\",\"details\":\"JDBC, MySQL foundations, Hibernate ORM, and database connection pools.\"},{\"module\":\"Module 3: Enterprise Spring Framework\",\"details\":\"Spring Core, Spring Boot, Spring Data JPA, and RESTful Microservices.\"},{\"module\":\"Module 4: Frontend Integration\",\"details\":\"HTML5, CSS3, JavaScript ES6, and connecting React frontends with Spring Boot.\"},{\"module\":\"Module 5: Testing, Security & Cloud\",\"details\":\"JUnit testing, Spring Security, JWT, Docker, and AWS deployment.\"}]",
+      "syllabus": "[{\"module\":\"Module 1: Core Java Programming\",\"details\":\"OOP principles, Collections Framework, Exception Handling, Multithreading & Stream API.\",\"recordingUrl\":\"https://www.w3schools.com/html/mov_bbb.mp4\"},{\"module\":\"Module 2: Advanced Java & Database\",\"details\":\"JDBC, MySQL foundations, Hibernate ORM, and database connection pools.\",\"recordingUrl\":\"https://www.w3schools.com/html/movie.mp4\"},{\"module\":\"Module 3: Enterprise Spring Framework\",\"details\":\"Spring Core, Spring Boot, Spring Data JPA, and RESTful Microservices.\",\"recordingUrl\":\"https://www.w3schools.com/html/mov_bbb.mp4\"},{\"module\":\"Module 4: Frontend Integration\",\"details\":\"HTML5, CSS3, JavaScript ES6, and connecting React frontends with Spring Boot.\",\"recordingUrl\":\"https://www.w3schools.com/html/movie.mp4\"},{\"module\":\"Module 5: Testing, Security & Cloud\",\"details\":\"JUnit testing, Spring Security, JWT, Docker, and AWS deployment.\",\"recordingUrl\":\"https://www.w3schools.com/html/mov_bbb.mp4\"}]",
       "faqs": "[{\"q\":\"Are there any prerequisites for this course?\",\"a\":\"No, this course starts completely from scratch. Basic programming familiarity is helpful but not mandatory.\"},{\"q\":\"Is there a placement assistance guarantee?\",\"a\":\"Yes! We offer extensive mock interview sessions, resume polishing, and referrals with 500+ corporate hiring partners.\"}]",
       "createdAt": "2026-05-30T11:44:35.491Z"
     },
@@ -90,7 +135,7 @@
       "mentorExp": "8+ Years Exp at Adobe & Flipkart",
       "mentorAvatar": "S",
       "mentorBio": "UI Architect focused on rendering optimization, custom animations, Framer Motion, and design systems.",
-      "syllabus": "[{\"module\":\"Module 1: UI Core & Layouts\",\"details\":\"Semantic HTML5, CSS Flexbox & Grid, Responsive Design, and Tailwind CSS.\"},{\"module\":\"Module 2: Modern JavaScript (ES6+)\",\"details\":\"DOM manipulation, Asynchronous programming, Fetch API, and Functional structures.\"},{\"module\":\"Module 3: Deep React Foundations\",\"details\":\"Virtual DOM, JSX, State & Props, Custom Hooks, Context API, and State Managers.\"},{\"module\":\"Module 4: Modern Production Next.js\",\"details\":\"App Router, Server Actions, SSR vs SSG, Routing, SEO optimization, and Image components.\"}]",
+      "syllabus": "[{\"module\":\"Module 1: UI Core & Layouts\",\"details\":\"Semantic HTML5, CSS Flexbox & Grid, Responsive Design, and Tailwind CSS.\",\"recordingUrl\":\"https://www.w3schools.com/html/mov_bbb.mp4\"},{\"module\":\"Module 2: Modern JavaScript (ES6+)\",\"details\":\"DOM manipulation, Asynchronous programming, Fetch API, and Functional structures.\",\"recordingUrl\":\"https://www.w3schools.com/html/movie.mp4\"},{\"module\":\"Module 3: Deep React Foundations\",\"details\":\"Virtual DOM, JSX, State & Props, Custom Hooks, Context API, and State Managers.\",\"recordingUrl\":\"https://www.w3schools.com/html/mov_bbb.mp4\"},{\"module\":\"Module 4: Modern Production Next.js\",\"details\":\"App Router, Server Actions, SSR vs SSG, Routing, SEO optimization, and Image components.\",\"recordingUrl\":\"https://www.w3schools.com/html/movie.mp4\"}]",
       "faqs": "[{\"q\":\"Will I build real projects?\",\"a\":\"Absolutely! You will build 6 real-world web applications including a premium e-commerce portal and a SaaS dashboard.\"}]",
       "createdAt": "2026-05-30T11:44:35.491Z"
     },
@@ -353,6 +398,15 @@
       "progress": 65,
       "lastLesson": "Module 3: React Custom Hooks",
       "enrolledAt": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "enro-1780575374698",
+      "userId": "user-1780575277778",
+      "courseId": "course-frontend",
+      "progress": 20,
+      "lastLesson": "Module 1: Lecture Lesson #2",
+      "createdAt": "2026-06-04T12:16:14.698Z",
+      "updatedAt": "2026-06-04T12:16:49.399Z"
     }
   ],
   "payments": [
@@ -364,6 +418,16 @@
       "status": "Success",
       "txId": "TXN-MOCK-FED8237",
       "date": "2026-05-30T11:44:35.491Z"
+    },
+    {
+      "id": "paym-1780575374697",
+      "userId": "user-1780575277778",
+      "courseId": "course-frontend",
+      "amount": 26549,
+      "status": "Success",
+      "txId": "TXN-61D6B8F7",
+      "createdAt": "2026-06-04T12:16:14.697Z",
+      "updatedAt": "2026-06-04T12:16:14.697Z"
     }
   ],
   "leads": [
@@ -456,5 +520,109 @@
       "createdAt": "2026-05-30T11:44:35.491Z"
     }
   ],
-  "reviews": []
+  "reviews": [],
+  "attendances": [
+    {
+      "id": "att-1",
+      "batchId": "batch-2",
+      "date": "2026-06-01",
+      "presentCount": 1,
+      "absentCount": 0,
+      "records": "[{\"studentId\":\"user-student\",\"studentName\":\"Sandeep Kumar\",\"present\":true,\"joinTime\":\"08:02 AM\",\"leaveTime\":\"09:57 AM\"}]",
+      "createdAt": "2026-06-01T08:00:00.000Z",
+      "updatedAt": "2026-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "att-2",
+      "batchId": "batch-2",
+      "date": "2026-06-03",
+      "presentCount": 1,
+      "absentCount": 0,
+      "records": "[{\"studentId\":\"user-student\",\"studentName\":\"Sandeep Kumar\",\"present\":true,\"joinTime\":\"08:05 AM\",\"leaveTime\":\"09:55 AM\"}]",
+      "createdAt": "2026-06-03T08:00:00.000Z",
+      "updatedAt": "2026-06-03T10:00:00.000Z"
+    }
+  ],
+  "notificationSettings": [
+    {
+      "id": "ns-1",
+      "key": "email_enabled",
+      "value": "true"
+    },
+    {
+      "id": "ns-2",
+      "key": "whatsapp_enabled",
+      "value": "true"
+    },
+    {
+      "id": "ns-3",
+      "key": "tpl_enrollment_subject",
+      "value": "Welcome to {courseName}! Your Enrollment is Confirmed!"
+    },
+    {
+      "id": "ns-4",
+      "key": "tpl_enrollment_body",
+      "value": "Hello {studentName},\n\nYour payment of {amount} has been successfully received. Welcome to Aurenza Academy! You are now enrolled in the {courseName} certification program. Start learning from your dashboard now."
+    },
+    {
+      "id": "ns-5",
+      "key": "tpl_reminder_subject",
+      "value": "Reminder: Your {courseName} Live cohort class starts in 1 hour!"
+    },
+    {
+      "id": "ns-6",
+      "key": "tpl_reminder_body",
+      "value": "Hello {studentName},\n\nThis is a friendly reminder that your Aurenza Academy live classroom cohort session for {courseName} starts at {timeSlot}. Click Join Room directly from your student dashboard."
+    },
+    {
+      "id": "ns-7",
+      "key": "tpl_certificate_subject",
+      "value": "Congratulations! Your {courseName} Certificate is Ready!"
+    },
+    {
+      "id": "ns-8",
+      "key": "tpl_certificate_body",
+      "value": "Dear {studentName},\n\nCongratulations on successfully completing 100% of the syllabus modules for {courseName}! Your verifiable professional certificate is ready. Verification ID code: {certId}. Download it from your Certificates Vault."
+    }
+  ],
+  "notificationLogs": [
+    {
+      "id": "log-1",
+      "type": "PAYMENT_CONFIRMATION",
+      "recipient": "student@aurenzaacademy.com",
+      "channel": "EMAIL",
+      "content": "Subject: Welcome to Frontend Development (React & Next.js)! Your Enrollment is Confirmed!\n\nHello Sandeep Kumar,\n\nYour payment of ₹24,999 has been successfully received. Welcome to Aurenza Academy! You are now enrolled in the Frontend Development (React & Next.js) certification program. Start learning from your dashboard now.",
+      "status": "DELIVERED",
+      "createdAt": "2026-05-30T11:45:00.000Z"
+    },
+    {
+      "id": "log-2",
+      "type": "PAYMENT_CONFIRMATION",
+      "recipient": "+91 9876543210",
+      "channel": "WHATSAPP",
+      "content": "WhatsApp: Hello Sandeep Kumar,\n\nYour payment of ₹24,999 has been successfully received. Welcome to Aurenza Academy! You are now enrolled in the Frontend Development (React & Next.js) certification program. Start learning from your dashboard now.",
+      "status": "SENT",
+      "createdAt": "2026-05-30T11:45:05.000Z"
+    },
+    {
+      "id": "noti-1780575374749",
+      "type": "ENROLLMENT_CONFIRMATION",
+      "recipient": "dwarapureddysandeep@gmail.com",
+      "channel": "EMAIL",
+      "content": "Subject: Welcome to Frontend Development (React & Next.js)! Your Enrollment is Confirmed!\n\nHello Sandeep D,\n\nYour payment of ₹26,549 has been successfully received. Welcome to Aurenza Academy! You are now enrolled in the Frontend Development (React & Next.js) certification program. Start learning from your dashboard now.",
+      "status": "DELIVERED",
+      "createdAt": "2026-06-04T12:16:14.749Z",
+      "updatedAt": "2026-06-04T12:16:14.749Z"
+    },
+    {
+      "id": "noti-1780575374762",
+      "type": "PAYMENT_CONFIRMATION",
+      "recipient": "+919000143076",
+      "channel": "WHATSAPP",
+      "content": "WhatsApp: Hello Sandeep D,\n\nYour payment of ₹26,549 has been successfully received. Welcome to Aurenza Academy! You are now enrolled in the Frontend Development (React & ",
+      "status": "SENT",
+      "createdAt": "2026-06-04T12:16:14.762Z",
+      "updatedAt": "2026-06-04T12:16:14.762Z"
+    }
+  ]
 }

@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bot, Mail, Lock, User, Phone, ShieldCheck, Sparkles } from 'lucide-react';
-import { loginUser, registerUser } from '@/lib/actions';
+import { Bot, Mail, Lock, User, Phone, ShieldCheck, Sparkles, ArrowLeft } from 'lucide-react';
+import { loginUser, registerUser, forgotPasswordAction } from '@/lib/actions';
+import { supabase } from '@/lib/supabaseClient';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+  const [activeTab, setActiveTab] = useState<'login' | 'register' | 'forgot'>('login');
   const [loading, setLoading] = useState(false);
 
   // Form States
@@ -16,6 +17,17 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+
+  // Capture and display URL redirection errors
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const errorParam = params.get('error');
+      if (errorParam) {
+        toast.error(decodeURIComponent(errorParam), { id: "url-error", duration: 5000 });
+      }
+    }
+  }, []);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,8 +75,45 @@ export default function LoginPage() {
     }
   };
 
-  const triggerGoogleLogin = () => {
-    toast.success("Simulating Google OAuth verification flow...", { duration: 3000 });
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setLoading(true);
+    toast.loading("Processing password recovery...", { id: "auth" });
+    
+    const res = await forgotPasswordAction(email);
+    setLoading(false);
+    
+    if (res.success) {
+      toast.success(res.message || "Reset link sent!", { id: "auth" });
+      setEmail('');
+      setActiveTab('login');
+    } else {
+      toast.error(res.error || "Recovery failed.", { id: "auth" });
+    }
+  };
+
+  const triggerGoogleLogin = async () => {
+    setLoading(true);
+    toast.loading("Redirecting to Google Sign-In...", { id: "auth" });
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/api/auth/callback`
+        }
+      });
+      
+      if (error) {
+        setLoading(false);
+        toast.error(error.message || "Failed to initialize Google authentication.", { id: "auth" });
+      }
+    } catch (err: any) {
+      setLoading(false);
+      toast.error(err.message || "Google login failed.", { id: "auth" });
+    }
   };
 
   const triggerOtpLogin = () => {
@@ -79,37 +128,43 @@ export default function LoginPage() {
 
       <div className="relative w-full max-w-md overflow-hidden rounded-[32px] border border-borderLight bg-white p-6 sm:p-8 text-textPrimary shadow-premium animate-fade-up">
         
+        {/* Header Block */}
         <div className="text-center space-y-2 mb-8">
           <span className="text-[10px] font-extrabold text-primary uppercase tracking-widest flex items-center justify-center gap-1.5 leading-none">
             <ShieldCheck className="w-3.5 h-3.5" /> SECURE GATEWAY
           </span>
           <h3 className="text-2xl font-extrabold tracking-tight heading text-textPrimary">
-            {activeTab === 'login' ? "Access Your Dashboard" : "Register Learner Profile"}
+            {activeTab === 'login' && "Access Your Dashboard"}
+            {activeTab === 'register' && "Register Learner Profile"}
+            {activeTab === 'forgot' && "Recover Password"}
           </h3>
           <p className="text-xs text-textSecondary">
-            {activeTab === 'login' 
-              ? "Sign in with your verified student, trainer or admin email."
-              : "Acquire lifetime cohorts access and placement statistics."}
+            {activeTab === 'login' && "Sign in with your verified student, trainer or admin email."}
+            {activeTab === 'register' && "Acquire lifetime cohorts access and placement statistics."}
+            {activeTab === 'forgot' && "Enter your corporate or student email to receive a password reset link."}
           </p>
         </div>
 
-        {/* Tab Toggle buttons */}
-        <div className="flex border-b border-borderLight mb-6">
-          <button
-            onClick={() => setActiveTab('login')}
-            className={`flex-1 py-3 text-center text-xs font-bold transition ${activeTab === 'login' ? 'text-primary border-b-2 border-primary' : 'text-textSecondary hover:text-primary'}`}
-          >
-            Learner Login
-          </button>
-          <button
-            onClick={() => setActiveTab('register')}
-            className={`flex-1 py-3 text-center text-xs font-bold transition ${activeTab === 'register' ? 'text-primary border-b-2 border-primary' : 'text-textSecondary hover:text-primary'}`}
-          >
-            Create Profile
-          </button>
-        </div>
+        {/* Tab Toggle buttons (Hidden in Forgot Password mode) */}
+        {activeTab !== 'forgot' ? (
+          <div className="flex border-b border-borderLight mb-6">
+            <button
+              onClick={() => setActiveTab('login')}
+              className={`flex-1 py-3 text-center text-xs font-bold transition ${activeTab === 'login' ? 'text-primary border-b-2 border-primary' : 'text-textSecondary hover:text-primary'}`}
+            >
+              Learner Login
+            </button>
+            <button
+              onClick={() => setActiveTab('register')}
+              className={`flex-1 py-3 text-center text-xs font-bold transition ${activeTab === 'register' ? 'text-primary border-b-2 border-primary' : 'text-textSecondary hover:text-primary'}`}
+            >
+              Create Profile
+            </button>
+          </div>
+        ) : null}
 
-        {activeTab === 'login' ? (
+        {/* Dynamic Forms mapping */}
+        {activeTab === 'login' && (
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             
             {/* Email Address */}
@@ -123,7 +178,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@aurenzaacademy.com"
-                className="glass-input text-xs sm:text-sm"
+                className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
               />
             </div>
 
@@ -135,7 +190,10 @@ export default function LoginPage() {
                 </label>
                 <button
                   type="button"
-                  onClick={() => toast.success("Mock password recovery trigger dispatched!")}
+                  onClick={() => {
+                    setEmail('');
+                    setActiveTab('forgot');
+                  }}
                   className="text-[9px] font-bold text-textSecondary hover:text-primary transition"
                 >
                   Forgot Password?
@@ -147,7 +205,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="glass-input text-xs sm:text-sm"
+                className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
               />
             </div>
 
@@ -160,7 +218,9 @@ export default function LoginPage() {
             </button>
 
           </form>
-        ) : (
+        )}
+
+        {activeTab === 'register' && (
           <form onSubmit={handleRegisterSubmit} className="space-y-4">
             
             {/* Name */}
@@ -174,14 +234,14 @@ export default function LoginPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g. Sandeep Kumar"
-                className="glass-input text-xs sm:text-sm"
+                className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
               />
             </div>
 
             {/* Email */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-textSecondary uppercase tracking-wider flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-secondary" /> Email Address
+              <label className="text-[10px] font-bold text-[#E85AD9] uppercase tracking-wider flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-[#E85AD9]" /> Email Address
               </label>
               <input
                 type="email"
@@ -189,7 +249,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="e.g. sandeep@gmail.com"
-                className="glass-input text-xs sm:text-sm"
+                className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
               />
             </div>
 
@@ -204,7 +264,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min 6 characters"
-                className="glass-input text-xs sm:text-sm"
+                className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
               />
             </div>
 
@@ -219,7 +279,7 @@ export default function LoginPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. +91 98765 43210"
-                className="glass-input text-xs sm:text-sm"
+                className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
               />
             </div>
 
@@ -229,6 +289,47 @@ export default function LoginPage() {
               className="w-full py-3.5 rounded-[14px] bg-primary hover:bg-primaryHover hover:shadow-glowPurple transition text-xs sm:text-sm font-black text-white flex items-center justify-center gap-1.5 mt-2"
             >
               {loading ? "Creating Account..." : "Register & Start Learning →"}
+            </button>
+
+          </form>
+        )}
+
+        {activeTab === 'forgot' && (
+          <form onSubmit={handleForgotSubmit} className="space-y-4 animate-fade-up">
+            
+            {/* Email Address */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-[10px] font-bold text-textSecondary uppercase tracking-wider flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-primary" /> Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your.email@company.com"
+                className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 rounded-[14px] bg-primary hover:bg-primaryHover hover:shadow-glowPurple transition text-xs sm:text-sm font-black text-white flex items-center justify-center gap-1.5 mt-2 shadow-sm"
+            >
+              {loading ? "Sending Link..." : "Request Reset Link"}
+            </button>
+
+            {/* Back to Login */}
+            <button
+              type="button"
+              onClick={() => {
+                setEmail('');
+                setActiveTab('login');
+              }}
+              className="w-full py-2.5 rounded-[12px] border border-borderLight text-textSecondary hover:text-textPrimary transition text-xs font-bold flex items-center justify-center gap-1.5 mt-3"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back to Login
             </button>
 
           </form>
@@ -247,6 +348,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={triggerGoogleLogin}
+            disabled={loading}
             className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-sectionBg border border-borderLight hover:bg-white transition font-bold"
           >
             <span className="text-primary font-black">G</span> Google OAuth

@@ -39,9 +39,16 @@ export default async function AdminDashboardPage() {
   const students = await db.user.findMany({ where: { role: 'STUDENT' } });
   const payments = await db.payment.findMany();
   const certificates = await db.certificate.findMany();
+  const trainers = await db.trainer.findMany();
+  const categories = await db.category.findMany();
+  const testimonials = await db.testimonial.findMany();
+  const blogs = await db.blog.findMany();
+  
+  // Fetch Notification settings and logs (Phase 9)
+  const notificationSettings = await db.notificationSetting.findMany();
+  const notificationLogs = await db.notificationLog.findMany();
 
   // Aggregate metrics
-  const totalLeadsCount = leads.length + corporateLeads.length;
   const totalRevenue = payments.reduce((acc: number, curr: any) => acc + curr.amount, 0);
 
   return (
@@ -60,7 +67,7 @@ export default async function AdminDashboardPage() {
               Admin & CRM Dashboard, <span className="text-gradient-purple-pink">Aurenza Academy</span>
               <Sparkles className="w-5 h-5 text-secondary" />
             </h2>
-            <p className="text-xs text-textSecondary">Review sales pipeline lead stages, create upcoming courses/batches, and issue verifiable completion certificates.</p>
+            <p className="text-xs text-textSecondary">Review business metrics, manage courses/categories, schedule live batches, track revenues/refunds, moderate reviews, write blogs, and update settings.</p>
           </div>
           
           <div className="bg-white border border-borderLight rounded-2xl px-4 py-2.5 flex items-center gap-2 text-xs text-textPrimary font-semibold shadow-soft">
@@ -69,20 +76,22 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Top Metrics Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Top Metrics Row (6 Key Stats as requested) */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
           {[
-            { title: "Total CRM Leads", value: totalLeadsCount, color: "text-primary", icon: <Users className="w-4 h-4 text-primary" /> },
-            { title: "Enrollment Revenue", value: `₹${totalRevenue.toLocaleString()}`, color: "text-successGreen", icon: <IndianRupee className="w-4 h-4 text-successGreen" /> },
-            { title: "Active Learners", value: students.length, color: "text-primary", icon: <Users className="w-4 h-4 text-primary" /> },
-            { title: "Issued Certificates", value: certificates.length, color: "text-textPrimary", icon: <Award className="w-4 h-4 text-textPrimary" /> }
+            { title: "Total Students", value: students.length, color: "text-primary", icon: <Users className="w-4 h-4 text-primary" /> },
+            { title: "Total Courses", value: courses.length, color: "text-secondary", icon: <Layers className="w-4 h-4 text-secondary" /> },
+            { title: "Total Tutors", value: trainers.length, color: "text-amber-500", icon: <Users className="w-4 h-4 text-amber-500" /> },
+            { title: "Total Revenue", value: `₹${totalRevenue.toLocaleString('en-IN')}`, color: "text-successGreen", icon: <IndianRupee className="w-4 h-4 text-successGreen" /> },
+            { title: "Active Batches", value: batches.length, color: "text-blue-500", icon: <Award className="w-4 h-4 text-blue-500" /> },
+            { title: "Corporate Leads", value: corporateLeads.length, color: "text-rose-500", icon: <Users className="w-4 h-4 text-rose-500" /> }
           ].map((stat, idx) => (
-            <div key={idx} className="bg-white border border-borderLight p-5 space-y-3 rounded-2xl shadow-soft">
+            <div key={idx} className="bg-white border border-borderLight p-4.5 space-y-2 rounded-2xl shadow-soft">
               <div className="flex justify-between items-center text-textSecondary">
-                <span className="text-[10px] font-bold uppercase tracking-wider">{stat.title}</span>
-                <div className="p-1.5 rounded bg-sectionBg border border-borderLight">{stat.icon}</div>
+                <span className="text-[9px] font-bold uppercase tracking-wider">{stat.title}</span>
+                <div className="p-1 rounded bg-sectionBg border border-borderLight">{stat.icon}</div>
               </div>
-              <p className={`text-xl sm:text-2xl font-extrabold heading leading-none ${stat.color}`}>{stat.value}</p>
+              <p className={`text-lg sm:text-xl font-extrabold heading leading-none ${stat.color}`}>{stat.value}</p>
             </div>
           ))}
         </div>
@@ -94,6 +103,14 @@ export default async function AdminDashboardPage() {
           courses={courses}
           batches={batches}
           students={students}
+          trainers={trainers}
+          categories={categories}
+          payments={payments}
+          certificates={certificates}
+          testimonials={testimonials}
+          blogs={blogs}
+          notificationSettings={notificationSettings}
+          notificationLogs={notificationLogs}
         />
 
       </div>

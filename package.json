@@ -9,16 +9,20 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.6.0",
     "@prisma/client": "^5.15.0",
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.107.0",
     "framer-motion": "^12.4.0",
     "lucide-react": "^0.468.0",
     "next": "^15.1.0",
+    "razorpay": "^2.9.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.51.5",
-    "@hookform/resolvers": "^3.6.0",
     "react-hot-toast": "^2.4.1",
     "recharts": "^2.12.7",
+    "resend": "^6.12.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -27,10 +31,10 @@
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.4",
-    "typescript": "^5.4.5",
     "prisma": "^5.15.0",
-    "ts-node": "^10.9.2"
+    "tailwindcss": "^3.4.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

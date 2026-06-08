@@ -7,8 +7,10 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Check if PostgreSQL environment variable exists
-const hasDatabaseUrl = typeof process !== 'undefined' && !!process.env.DATABASE_URL;
+// Check if PostgreSQL environment variable exists (excluding local mock values)
+const hasDatabaseUrl = typeof process !== 'undefined' && 
+                       !!process.env.DATABASE_URL && 
+                       process.env.DATABASE_URL !== 'postgresql://postgres:postgres@localhost:5432/aurenza';
 
 let prismaInstance: any;
 
@@ -420,7 +422,11 @@ export const mockPrismaProxy = new Proxy({}, {
       testimonial: 'testimonials',
       roadmap: 'roadmaps',
       certificate: 'certificates',
-      review: 'reviews'
+      review: 'reviews',
+      assignment: 'assignments',
+      attendance: 'attendances',
+      notificationSetting: 'notificationSettings',
+      notificationLog: 'notificationLogs'
     };
 
     if (propName in mappedTables) {

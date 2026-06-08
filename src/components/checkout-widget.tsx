@@ -2,9 +2,24 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { enrollStudentAction, loginUser, registerUser } from '@/lib/actions';
+import { enrollStudentAction, loginUser, registerUser, createRazorpayOrderAction, verifyRazorpayPaymentAction } from '@/lib/actions';
 import { ShieldCheck, IndianRupee, Sparkles, CreditCard, Wallet, Landmark, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Helper to dynamically load the Razorpay checkout script
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (typeof window !== 'undefined' && (window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 interface CheckoutWidgetProps {
   course: any;
@@ -29,9 +44,26 @@ export default function CheckoutWidget({ course, initialUser }: CheckoutWidgetPr
   const [txnId, setTxnId] = useState('');
 
   // Invoice calculations
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
+
   const originalPrice = course.price;
-  const gstAmount = Math.round(originalPrice * 0.18);
-  const totalPrice = originalPrice + gstAmount;
+  const discountedPrice = Math.max(originalPrice - discountAmount, 0);
+  const gstAmount = Math.round(discountedPrice * 0.18);
+  const totalPrice = discountedPrice + gstAmount;
+
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (couponCode.toUpperCase() === 'AURENZA10') {
+      const discount = Math.round(originalPrice * 0.1);
+      setDiscountAmount(discount);
+      setAppliedCoupon('AURENZA10');
+      toast.success("Coupon AURENZA10 applied! 10% discount subtracted.");
+    } else {
+      toast.error("Invalid coupon code. Try 'AURENZA10'.");
+    }
+  };
 
   // Handle inline register
   const handleAuth = async (e: React.FormEvent) => {
@@ -56,14 +88,95 @@ export default function CheckoutWidget({ course, initialUser }: CheckoutWidgetPr
     }
   };
 
-  // Launch Razorpay Simulation
-  const handleOpenRazorpay = () => {
+  // Launch Razorpay Checkout Popup
+  const handleOpenRazorpay = async () => {
     if (!user) {
       toast.error("Please sign in or register to complete purchase.");
       return;
     }
-    setPaymentStep('select');
-    setRazorpayOpen(true);
+
+    setLoading(true);
+    toast.loading("Initiating secure payment order...", { id: "razorpay-init" });
+
+    // 1. Load Razorpay script
+    const isScriptLoaded = await loadRazorpayScript();
+    if (!isScriptLoaded) {
+      setLoading(false);
+      toast.error("Failed to load Razorpay SDK. Check your internet connection.", { id: "razorpay-init" });
+      return;
+    }
+
+    // 2. Call server action to create order
+    const orderRes = await createRazorpayOrderAction(course.id, appliedCoupon);
+    if (!orderRes.success || !orderRes.order) {
+      setLoading(false);
+      toast.error(orderRes.error || "Failed to create payment order.", { id: "razorpay-init" });
+      return;
+    }
+
+    toast.dismiss("razorpay-init");
+    setLoading(false);
+
+    // 3. Configure options for the payment popup
+    const options = {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+      amount: orderRes.order.amount,
+      currency: orderRes.order.currency,
+      name: "Aurenza Academy",
+      description: `Enrollment in ${course.name}`,
+      image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=120&h=120&q=80",
+      order_id: orderRes.order.id,
+      handler: async function (response: any) {
+        // This is called after successful payment authorization
+        toast.loading("Verifying transaction credentials...", { id: "payment-verify" });
+        setPaymentStep('processing');
+        setRazorpayOpen(true); // Open the status overlay during verification
+
+        const verifyRes = await verifyRazorpayPaymentAction(
+          {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          },
+          course.id,
+          totalPrice
+        );
+
+        if (verifyRes.success) {
+          toast.success("Tuition invoice paid successfully!", { id: "payment-verify" });
+          setTxnId(verifyRes.payment?.txId || response.razorpay_payment_id);
+          setPaymentStep('success');
+
+          // Auto redirect to student dashboard after 3s
+          setTimeout(() => {
+            setRazorpayOpen(false);
+            router.push('/student');
+            router.refresh();
+          }, 3000);
+        } else {
+          setPaymentStep('failed');
+          toast.error(verifyRes.error || "Failed to log enrollment.", { id: "payment-verify" });
+        }
+      },
+      prefill: {
+        name: user.name,
+        email: user.email,
+        contact: user.phone || ""
+      },
+      theme: {
+        color: "#7A008C" // Aurenza Purple
+      },
+      modal: {
+        ondismiss: function () {
+          setLoading(false);
+          toast.error("Payment cancelled by user.");
+        }
+      }
+    };
+
+    // 4. Open Razorpay checkout popup
+    const rzp = new (window as any).Razorpay(options);
+    rzp.open();
   };
 
   // Process Simulated Payment
@@ -245,19 +358,38 @@ export default function CheckoutWidget({ course, initialUser }: CheckoutWidgetPr
             <span>{course.name} Certification</span>
             <strong className="text-textPrimary">₹{originalPrice.toLocaleString()}</strong>
           </div>
-          <div className="flex justify-between items-center text-green-500 font-bold">
-            <span>Special Promotional Coupon</span>
-            <span>- ₹0</span>
-          </div>
+          {discountAmount > 0 && (
+            <div className="flex justify-between items-center text-green-500 font-bold">
+              <span>Promotional Discount ({appliedCoupon})</span>
+              <span>- ₹{discountAmount.toLocaleString()}</span>
+            </div>
+          )}
           <div className="flex justify-between items-center">
             <span>Taxes & GST (18%)</span>
             <strong className="text-textPrimary">₹{gstAmount.toLocaleString()}</strong>
           </div>
           <div className="border-t border-borderLight pt-3.5 flex justify-between items-center text-sm font-black text-textPrimary heading">
             <span>Total Payable Amount</span>
-            <span className="text-lg text-primary">₹{totalPrice.toLocaleString()}</span>
+            <span className="text-lg text-primary font-black">₹{totalPrice.toLocaleString()}</span>
           </div>
         </div>
+
+        {/* Promo Coupon Inputs */}
+        <form onSubmit={handleApplyCoupon} className="flex gap-2 text-xs">
+          <input
+            type="text"
+            placeholder="Promo Coupon (e.g. AURENZA10)"
+            value={couponCode}
+            onChange={(e) => setCouponCode(e.target.value)}
+            className="glass-input flex-1 py-2 text-[10px]"
+          />
+          <button
+            type="submit"
+            className="px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-xl text-xs font-black transition"
+          >
+            Apply
+          </button>
+        </form>
 
         <button
           onClick={handleOpenRazorpay}
@@ -267,9 +399,16 @@ export default function CheckoutWidget({ course, initialUser }: CheckoutWidgetPr
           Pay with Razorpay →
         </button>
 
-        <div className="text-center text-[10px] text-textSecondary flex justify-center items-center gap-1">
-          <ShieldCheck className="w-4 h-4 text-successGreen" />
-          <span>Transactions protected by 256-bit bank encryption standards.</span>
+        {/* Corporate bulk details */}
+        <div className="text-center text-xs space-y-2">
+          <p className="text-[10px] text-textSecondary flex justify-center items-center gap-1">
+            <ShieldCheck className="w-4 h-4 text-successGreen" />
+            <span>Transactions protected by 256-bit bank encryption.</span>
+          </p>
+          <p className="text-[11px]">
+            <span className="text-textSecondary">Buying for a team? </span>
+            <a href="/corporate" className="text-primary hover:underline font-bold">Contact Enterprise Sales &rarr;</a>
+          </p>
         </div>
 
       </div>
@@ -367,12 +506,22 @@ export default function CheckoutWidget({ course, initialUser }: CheckoutWidgetPr
                   <div className="w-16 h-16 rounded-full bg-successGreen/15 text-successGreen flex items-center justify-center border border-successGreen/30 animate-pulse">
                     <CheckCircle2 className="w-10 h-10" />
                   </div>
-                  <div>
+                  <div className="space-y-3">
                     <h4 className="text-md font-bold text-textPrimary">Payment Authenticated Successfully</h4>
-                    <p className="text-[10px] text-textSecondary mt-1 leading-normal">
-                      Transaction verified. Invoice logged under:<br />
-                      <code className="text-primary font-bold mt-1 block select-all bg-sectionBg border border-borderLight py-1 rounded px-2">{txnId}</code>
-                    </p>
+                    <div className="text-[10px] text-textSecondary mt-1 leading-normal space-y-1.5">
+                      <p>Transaction verified. Invoice logged under:</p>
+                      <code className="text-primary font-bold block select-all bg-sectionBg border border-borderLight py-1 rounded px-2">{txnId}</code>
+                      <p className="text-green-500 font-semibold">✓ Invoice receipt and course guides dispatched to {user?.email}.</p>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={() => alert(`GST INVOICE RECEIPT\n-------------------\nInvoice No: INV-${txnId.substring(4)}\nCourse: ${course.name}\nBase Price: ₹${originalPrice.toLocaleString()}\nDiscount: -₹${discountAmount.toLocaleString()}\nGST (18%): ₹${gstAmount.toLocaleString()}\nTotal Paid: ₹${totalPrice.toLocaleString()}\nStatus: PAID (Success)\n\nThank you for choosing Aurenza Academy!`)}
+                      className="px-4 py-2 bg-sectionBg hover:bg-neutral-100 border border-borderLight rounded-xl text-[10px] font-bold text-textPrimary transition"
+                    >
+                      Download GST Invoice Receipt
+                    </button>
+                    
                     <span className="text-[9px] text-[#7A008C] font-extrabold uppercase mt-4 block tracking-wider animate-pulse">Redirecting to Learner Dashboard...</span>
                   </div>
                 </div>
