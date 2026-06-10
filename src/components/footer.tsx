@@ -22,9 +22,24 @@ export default function Footer() {
     }
   };
 
+  const [whatsappNumber, setWhatsappNumber] = useState('917013057827');
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem('aurenza_settings');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.contactWhatsapp) {
+          const cleaned = parsed.contactWhatsapp.replace(/[+\s-]/g, '');
+          setWhatsappNumber(cleaned);
+        }
+      } catch (e) {}
+    }
+  }, []);
+
   const handleWhatsApp = () => {
     const text = encodeURIComponent("Hello Aurenza Academy! I would like to enquire about your upcoming live cohorts, placement referrals, and AI Career Counseling packages.");
-    window.open(`https://wa.me/917013057827?text=${text}`, '_blank');
+    window.open(`https://wa.me/${whatsappNumber}?text=${text}`, '_blank');
   };
 
   return (
@@ -78,16 +93,16 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4 — Resources */}
+          {/* Column 4 — Explore */}
           <div className="space-y-4">
             <span className="font-heading text-[16px] font-semibold text-textPrimary">
-              Resources
+              Explore
             </span>
             <ul className="space-y-3">
-              <li><Link href="/blog" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Blogs</Link></li>
+              <li><Link href="/why-us" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Why Us</Link></li>
               <li><Link href="/#webinars" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Webinars</Link></li>
               <li><Link href="/corporate" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Case Studies</Link></li>
-              <li><Link href="/roadmaps" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">Learning Paths</Link></li>
+              <li><Link href="/about" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">About Us</Link></li>
               <li><Link href="/#faqs" className="text-[14px] text-textSecondary hover:text-primary transition font-medium">FAQs</Link></li>
             </ul>
           </div>
@@ -158,11 +173,10 @@ export default function Footer() {
           {/* Social circular icons */}
           <div className="flex items-center gap-3">
             {[
-              { icon: <Linkedin className="w-4 h-4" />, href: 'https://linkedin.com', label: 'LinkedIn' },
-              { icon: <Youtube className="w-4 h-4" />, href: 'https://youtube.com', label: 'YouTube' },
-              { icon: <Instagram className="w-4 h-4" />, href: 'https://instagram.com', label: 'Instagram' },
-              { icon: <Facebook className="w-4 h-4" />, href: 'https://facebook.com', label: 'Facebook' },
-              { icon: <Twitter className="w-4 h-4" />, href: 'https://twitter.com', label: 'Twitter' },
+              { icon: <Linkedin className="w-4 h-4" />, href: 'https://www.linkedin.com/company/aurenza-academy/posts/?feedView=all', label: 'LinkedIn' },
+              { icon: <Youtube className="w-4 h-4" />, href: 'https://youtube.com/@aurenzaacademy?si=aMwD1U3Y3qV4AVl_', label: 'YouTube' },
+              { icon: <Instagram className="w-4 h-4" />, href: 'https://www.instagram.com/aurenza_academy/', label: 'Instagram' },
+              { icon: <Facebook className="w-4 h-4" />, href: 'https://www.facebook.com/people/Aurenza-Academy/pfbid025SJZoKK3UAUaCkn19UGNtgAyGW7esQvXUtEQND5jyQQYNNeLqygjPPgr1Z78wAPAl/', label: 'Facebook' },
             ].map((soc, idx) => (
               <a
                 key={idx}

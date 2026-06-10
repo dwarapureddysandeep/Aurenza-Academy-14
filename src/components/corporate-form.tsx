@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { submitCorporateLead } from '@/lib/actions';
 import { CheckCircle2, Building, Mail, Phone, Users, User } from 'lucide-react';
+import LoadingSpinner from './loading-spinner';
 
 export default function CorporateForm() {
   const [loading, setLoading] = useState(false);
@@ -155,7 +156,12 @@ export default function CorporateForm() {
         disabled={loading}
         className="w-full py-3.5 rounded-[14px] bg-primary hover:bg-primaryHover text-xs font-black text-white hover:shadow-glowPurple transition flex items-center justify-center gap-2"
       >
-        {loading ? "Allocating B2B Coordinator..." : "Request Upskilling Proposal →"}
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <LoadingSpinner size="sm" className="brightness-150 text-white" />
+            Allocating B2B Coordinator...
+          </span>
+        ) : "Request Upskilling Proposal →"}
       </button>
 
     </form>

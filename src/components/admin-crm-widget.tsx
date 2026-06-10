@@ -28,6 +28,7 @@ import {
   Bell
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import LoadingSpinner from './loading-spinner';
 
 interface AdminCrmWidgetProps {
   initialLeads: any[];
@@ -63,7 +64,7 @@ export default function AdminCrmWidget({
   const router = useRouter();
   
   // 12 Tabs
-  type TabType = 'overview' | 'courses' | 'categories' | 'tutors' | 'batches' | 'students' | 'payments' | 'testimonials' | 'corporate' | 'blogs' | 'notifications' | 'settings';
+  type TabType = 'overview' | 'enquiries' | 'courses' | 'categories' | 'tutors' | 'batches' | 'students' | 'payments' | 'testimonials' | 'corporate' | 'notifications' | 'settings';
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -509,16 +510,13 @@ export default function AdminCrmWidget({
         
         {[
           { id: 'overview', label: 'Overview Dashboard', icon: <Home className="w-4 h-4" /> },
+          { id: 'enquiries', label: 'Course Enquiries', icon: <Users className="w-4 h-4" /> },
           { id: 'courses', label: 'Courses Hub', icon: <BookOpen className="w-4 h-4" /> },
           { id: 'categories', label: 'Categories Hub', icon: <Folder className="w-4 h-4" /> },
           { id: 'tutors', label: 'Tutors & Mentors', icon: <Users className="w-4 h-4" /> },
           { id: 'batches', label: 'Batches & Live', icon: <Calendar className="w-4 h-4" /> },
-          { id: 'students', label: 'Learners Roster', icon: <PlusCircle className="w-4 h-4" /> },
-          { id: 'payments', label: 'Payments & Revenue', icon: <CreditCard className="w-4 h-4" /> },
           { id: 'testimonials', label: 'Reviews & Quotes', icon: <MessageSquare className="w-4 h-4" /> },
           { id: 'corporate', label: 'Corporate Leads', icon: <Briefcase className="w-4 h-4" /> },
-          { id: 'blogs', label: 'Blog Manager', icon: <FileText className="w-4 h-4" /> },
-          { id: 'notifications', label: 'Notification Engine', icon: <Bell className="w-4 h-4" /> },
           { id: 'settings', label: 'Website Settings', icon: <Settings className="w-4 h-4" /> }
         ].map((tab) => (
           <button
@@ -555,7 +553,7 @@ export default function AdminCrmWidget({
       <main className="flex-1 w-full bg-white border border-borderLight p-6 rounded-[28px] shadow-soft min-h-[600px] relative">
         
         {/* Universal Search Bar on top for relevant tabs */}
-        {['courses', 'corporate', 'students', 'payments', 'blogs'].includes(activeTab) && (
+        {['courses', 'corporate', 'enquiries'].includes(activeTab) && (
           <div className="flex items-center gap-3 bg-sectionBg border border-borderLight rounded-xl px-3 py-2 mb-6">
             <Search className="w-4 h-4 text-textSecondary" />
             <input
@@ -613,9 +611,9 @@ export default function AdminCrmWidget({
                     </strong>
                   </div>
                   <div className="bg-sectionBg p-3.5 rounded-xl border border-borderLight">
-                    <span className="text-[10px] text-textSecondary font-bold block uppercase tracking-wider">Knowledge Base Blogs</span>
+                    <span className="text-[10px] text-textSecondary font-bold block uppercase tracking-wider">Corporate Leads</span>
                     <strong className="text-lg font-extrabold text-secondary heading mt-1 block">
-                      {blogs.length} Articles
+                      {initialCorporateLeads.length} Enquiries
                     </strong>
                   </div>
                 </div>
@@ -631,12 +629,12 @@ export default function AdminCrmWidget({
                     <span>Create / Modify Certification Course</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setActiveTab('batches')} className="w-full text-left p-3 rounded-xl hover:bg-primary/5 hover:text-primary border border-borderLight transition flex items-center justify-between font-bold">
-                    <span>Schedule Live Timetable Cohort</span>
+                  <button onClick={() => setActiveTab('enquiries')} className="w-full text-left p-3 rounded-xl hover:bg-primary/5 hover:text-primary border border-borderLight transition flex items-center justify-between font-bold">
+                    <span>Manage Course Enquiries</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
-                  <button onClick={() => setActiveTab('payments')} className="w-full text-left p-3 rounded-xl hover:bg-primary/5 hover:text-primary border border-borderLight transition flex items-center justify-between font-bold">
-                    <span>Audit Revenue Invoices & Refunds</span>
+                  <button onClick={() => setActiveTab('batches')} className="w-full text-left p-3 rounded-xl hover:bg-primary/5 hover:text-primary border border-borderLight transition flex items-center justify-between font-bold">
+                    <span>Schedule Live Timetable Cohort</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -649,7 +647,7 @@ export default function AdminCrmWidget({
                 <h4 className="text-xs font-bold uppercase tracking-wider text-textPrimary flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-primary" /> Active Leads CRM Pipeline
                 </h4>
-                <button onClick={() => setActiveTab('corporate')} className="text-[10px] text-primary font-bold hover:underline">View B2B Leads</button>
+                <button onClick={() => setActiveTab('enquiries')} className="text-[10px] text-primary font-bold hover:underline">View Enquiries</button>
               </div>
 
               <div className="grid grid-cols-5 gap-3">
@@ -877,9 +875,14 @@ export default function AdminCrmWidget({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-5 py-2.5 bg-primary text-white hover:bg-primaryHover font-black rounded-xl text-xs hover:shadow-glowPurple transition shadow-soft"
+                    className="px-5 py-2.5 bg-primary text-white hover:bg-primaryHover font-black rounded-xl text-xs hover:shadow-glowPurple transition shadow-soft flex items-center gap-1.5"
                   >
-                    Save Blueprints
+                    {loading ? (
+                      <>
+                        <LoadingSpinner size="xs" className="brightness-150 text-white" />
+                        Saving...
+                      </>
+                    ) : "Save Blueprints"}
                   </button>
                 </div>
               </form>
@@ -1832,6 +1835,102 @@ export default function AdminCrmWidget({
         )}
 
         {/* ======================================================== */}
+        {/* ======================================================== */}
+        {/* TAB: COURSE ENQUIRIES */}
+        {/* ======================================================== */}
+        {activeTab === 'enquiries' && (
+          <div className="space-y-6 animate-fade-up">
+            <div className="border-b border-borderLight pb-4 flex justify-between items-center">
+              <div>
+                <h3 className="text-base font-extrabold heading flex items-center gap-2">
+                  <Users className="w-5 h-5 text-primary" /> Individual Course Enquiries
+                </h3>
+                <p className="text-xs text-textSecondary mt-1">Manage inquiries submitted by prospective learners, update contact status, and log callback notes.</p>
+              </div>
+            </div>
+
+            {filteredLeads.length === 0 ? (
+              <div className="text-center py-12 bg-sectionBg border border-borderLight border-dashed rounded-2xl text-textSecondary">
+                <p className="text-xs font-semibold">No active enquiries found matching filters.</p>
+              </div>
+            ) : (
+              <div className="grid gap-5 lg:grid-cols-2 text-xs">
+                {filteredLeads.map((lead: any) => (
+                  <div key={lead.id} className="bg-white border border-borderLight p-5 rounded-2xl shadow-soft hover:shadow-premium transition-all space-y-4">
+                    
+                    {/* Header */}
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[8px] font-black text-primary uppercase tracking-widest block">Learner Enquiry</span>
+                        <h4 className="text-sm font-extrabold text-textPrimary heading mt-1">{lead.name}</h4>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-primary/5 text-primary border border-primary/10 text-[9px] font-bold">
+                        {lead.course}
+                      </span>
+                    </div>
+
+                    {/* Contact Info & Date */}
+                    <div className="grid grid-cols-2 gap-3 p-3 bg-sectionBg border border-borderLight rounded-xl text-[10px] text-textSecondary">
+                      <div>
+                        <span className="font-extrabold block text-textSecondary text-[8px] uppercase tracking-wide">Contact Details</span>
+                        <strong className="text-textPrimary mt-1 block">{lead.phone}</strong>
+                        <p className="text-textPrimary mt-0.5 truncate">{lead.email || <span className="italic text-neutral-400">No Email Provided</span>}</p>
+                      </div>
+                      <div>
+                        <span className="font-extrabold block text-textSecondary text-[8px] uppercase tracking-wide">Enquiry Date & Time</span>
+                        <p className="text-textPrimary mt-1 font-bold">{new Date(lead.createdAt).toLocaleString('en-IN')}</p>
+                      </div>
+                    </div>
+
+                    {/* Message */}
+                    {lead.message && (
+                      <div className="p-3 bg-sectionBg border border-borderLight rounded-xl text-[10px] text-textSecondary leading-relaxed italic">
+                        "{lead.message}"
+                      </div>
+                    )}
+
+                    {/* Status & Notes Form */}
+                    <div className="space-y-3 pt-2 border-t border-borderLight">
+                      <div className="flex justify-between items-center gap-4">
+                        <span className="text-[9px] font-bold text-textSecondary uppercase tracking-wide">Status Stage:</span>
+                        <select
+                          value={lead.status}
+                          onChange={(e) => handleStatusChange(lead.id, e.target.value, lead.notes || '')}
+                          className="px-2.5 py-1 bg-white border border-borderLight rounded-lg text-[10px] font-bold text-textPrimary focus:outline-none focus:ring-1 focus:ring-primary"
+                        >
+                          <option value="NEW">New</option>
+                          <option value="CONTACTED">Contacted</option>
+                          <option value="CONVERTED">Closed</option>
+                        </select>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[9px] font-bold text-textSecondary uppercase tracking-wide block">Follow-up Notes</label>
+                        <div className="flex gap-2 items-end">
+                          <textarea
+                            value={leadNotes[lead.id] !== undefined ? leadNotes[lead.id] : (lead.notes || '')}
+                            onChange={(e) => setLeadNotes(prev => ({ ...prev, [lead.id]: e.target.value }))}
+                            placeholder="Add administrative notes..."
+                            className="flex-1 p-2.5 bg-sectionBg border border-borderLight rounded-xl text-[10px] font-semibold text-textPrimary placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+                            rows={2}
+                          />
+                          <button
+                            onClick={() => handleSaveLeadNotes(lead.id, lead.status)}
+                            className="px-3 py-2 bg-primary hover:bg-primaryHover text-white text-[10px] font-bold rounded-xl transition shadow-soft shrink-0 h-10 flex items-center justify-center"
+                          >
+                            Save Notes
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* TAB 9: CORPORATE LEADS */}
         {/* ======================================================== */}
         {activeTab === 'corporate' && (
@@ -1894,165 +1993,7 @@ export default function AdminCrmWidget({
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* TAB 10: BLOG MANAGEMENT */}
-        {/* ======================================================== */}
-        {activeTab === 'blogs' && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-borderLight pb-4">
-              <div>
-                <h3 className="text-base font-extrabold heading flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-primary" /> Academy SEO Blog Manager
-                </h3>
-                <p className="text-xs text-textSecondary mt-1">Create career guides, certification articles, and publish to public website.</p>
-              </div>
-              {!editingBlog && (
-                <button
-                  onClick={() => {
-                    setEditingBlog('new');
-                    setBlogForm({ id: '', title: '', content: '', category: '', image: '', tags: '' });
-                  }}
-                  className="px-4 py-2 bg-primary text-white text-xs font-black rounded-xl hover:bg-primaryHover transition flex items-center gap-1.5 shadow-soft"
-                >
-                  <PlusCircle className="w-4 h-4" /> Create Blog Article
-                </button>
-              )}
-            </div>
-
-            {editingBlog ? (
-              <form onSubmit={handleSaveBlog} className="space-y-4 bg-sectionBg border border-borderLight p-6 rounded-2xl animate-fade-up">
-                <div className="flex justify-between items-center border-b border-borderLight pb-3 mb-2">
-                  <h4 className="text-xs font-black uppercase text-primary tracking-wider">
-                    {editingBlog === 'new' ? 'Write Article Draft' : `Editing Blog Post`}
-                  </h4>
-                  <button type="button" onClick={() => setEditingBlog(null)} className="p-1 rounded-full hover:bg-white text-textSecondary transition">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2 text-xs">
-                  <div className="flex flex-col gap-1.5 col-span-2">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Article Title</label>
-                    <input
-                      type="text"
-                      required
-                      value={blogForm.title}
-                      onChange={(e) => setBlogForm(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="e.g. The Ultimate Next.js App Router Guide"
-                      className="glass-input"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Category tag</label>
-                    <input
-                      type="text"
-                      required
-                      value={blogForm.category}
-                      onChange={(e) => setBlogForm(prev => ({ ...prev, category: e.target.value }))}
-                      placeholder="e.g. Cloud Computing"
-                      className="glass-input"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Banner Thumbnail Image URL</label>
-                    <input
-                      type="text"
-                      value={blogForm.image}
-                      onChange={(e) => setBlogForm(prev => ({ ...prev, image: e.target.value }))}
-                      placeholder="https://images.unsplash.com/..."
-                      className="glass-input"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 col-span-2">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Tags (comma-separated)</label>
-                    <input
-                      type="text"
-                      value={blogForm.tags}
-                      onChange={(e) => setBlogForm(prev => ({ ...prev, tags: e.target.value }))}
-                      placeholder="Next.js, Webdev, Tech"
-                      className="glass-input"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 col-span-2">
-                    <label className="font-bold text-textSecondary uppercase tracking-wide">Article content markdown</label>
-                    <textarea
-                      required
-                      value={blogForm.content}
-                      onChange={(e) => setBlogForm(prev => ({ ...prev, content: e.target.value }))}
-                      placeholder="Write your rich educational markdown here..."
-                      rows={8}
-                      className="glass-input font-mono text-[11px] leading-relaxed bg-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-borderLight">
-                  <button
-                    type="button"
-                    onClick={() => setEditingBlog(null)}
-                    className="px-4 py-2 border border-borderLight hover:bg-white text-textPrimary font-bold rounded-xl text-xs transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 bg-primary text-white hover:bg-primaryHover font-black rounded-xl text-xs transition shadow-soft"
-                  >
-                    Publish Article
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="grid gap-5 sm:grid-cols-2 text-xs">
-                {blogs.map((b) => (
-                  <div key={b.id} className="bg-white border border-borderLight p-4 rounded-2xl shadow-soft hover:shadow-premium transition flex flex-col justify-between">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start">
-                        <span className="px-2.5 py-0.5 rounded-full bg-secondary/5 text-secondary border border-secondary/10 text-[8px] font-black uppercase tracking-wider">
-                          {b.category}
-                        </span>
-                        <span className="text-[9px] text-textSecondary font-semibold">{b.views || 0} Views</span>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-black text-textPrimary heading line-clamp-1">{b.title}</h4>
-                        <p className="text-[10px] text-textSecondary font-mono mt-1">Slug: {b.slug}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 border-t border-borderLight pt-4 mt-4 font-bold text-[10px]">
-                      <button
-                        onClick={() => {
-                          setEditingBlog(b.id);
-                          setBlogForm({
-                            id: b.id,
-                            title: b.title,
-                            content: b.content,
-                            category: b.category,
-                            image: b.image || '',
-                            tags: Array.isArray(b.tags) ? b.tags.join(', ') : (b.tags || '')
-                          });
-                        }}
-                        className="flex-1 py-2 border border-borderLight hover:border-primary hover:text-primary rounded-xl text-center transition flex items-center justify-center gap-1"
-                      >
-                        <Edit className="w-3.5 h-3.5" /> Edit Article
-                      </button>
-                      <button
-                        onClick={() => handleDeleteBlog(b.id)}
-                        className="p-2 border border-borderLight hover:border-dangerRed hover:text-dangerRed rounded-xl transition text-center"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        {/* TAB 10: BLOG MANAGEMENT (Removed) */}
 
         {/* ======================================================== */}
         {/* TAB 12: NOTIFICATION ENGINE (Phase 9) */}
@@ -2257,7 +2198,16 @@ export default function AdminCrmWidget({
                 disabled={loading}
                 className="w-full py-3.5 bg-primary text-white font-black hover:bg-primaryHover hover:shadow-glowPurple transition rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2"
               >
-                <Check className="w-4 h-4" /> Save Notification Configuration & Live Templates
+                {loading ? (
+                  <>
+                    <LoadingSpinner size="xs" className="brightness-150 text-white" />
+                    Saving Configuration...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" /> Save Notification Configuration & Live Templates
+                  </>
+                )}
               </button>
             </form>
 

@@ -11,8 +11,7 @@ const navLinks = [
   { label: 'Courses', href: '#', hasMega: true },
   { label: 'Certifications', href: '/courses' },
   { label: 'Corporate Training', href: '/corporate' },
-  { label: 'Resources', href: '/roadmaps' },
-  { label: 'Blog', href: '/blog' },
+  { label: 'Why Us', href: '/why-us' },
   { label: 'About Us', href: '/about' },
 ];
 
@@ -301,17 +300,15 @@ export default function NavBar() {
                         <p className="text-[11px] text-textSecondary truncate mt-0.5">{user.email}</p>
                       </div>
                       
-                      <Link 
-                        href={
-                          user.role === 'ADMIN' ? '/admin' : 
-                          user.role === 'TRAINER' ? '/trainer' : 
-                          '/student'
-                        }
-                        className="flex items-center gap-2 px-3.5 py-2 rounded-btn hover:bg-purple-50/30 text-xs text-textPrimary font-bold transition-colors"
-                      >
-                        <LayoutDashboard className="w-3.5 h-3.5 text-primary" />
-                        Dashboard
-                      </Link>
+                      {user.role === 'ADMIN' && (
+                        <Link 
+                          href="/admin"
+                          className="flex items-center gap-2 px-3.5 py-2 rounded-btn hover:bg-purple-50/30 text-xs text-textPrimary font-bold transition-colors"
+                        >
+                          <LayoutDashboard className="w-3.5 h-3.5 text-primary" />
+                          Dashboard
+                        </Link>
+                      )}
                       
                       <button 
                         onClick={handleLogout}
@@ -331,16 +328,16 @@ export default function NavBar() {
                   href="/login"
                   className="h-10 px-4 rounded-btn border border-primary text-primary hover:bg-purple-50/20 font-bold text-xs inline-flex items-center justify-center transition"
                 >
-                  Student Login
+                  Admin Portal
                 </Link>
 
-                {/* Primary Gradient Button: Enroll Now */}
+                {/* Primary Gradient Button: Join Immediately */}
                 <button
                   type="button"
                   onClick={openConsultationModal}
                   className="h-10 px-5 rounded-btn bg-brand-gradient text-white font-bold text-xs inline-flex items-center justify-center transition hover:opacity-90 hover:shadow-soft"
                 >
-                  Enroll Now
+                  Join Immediately
                 </button>
               </div>
             )}
@@ -489,13 +486,13 @@ export default function NavBar() {
                       onClick={() => setMobileOpen(false)}
                       className="flex items-center justify-center w-full py-3 border border-primary text-primary rounded-btn font-bold text-xs transition text-center hover:bg-purple-50/10"
                     >
-                      Student Login
+                      Admin Portal
                     </Link>
                     <button
                       onClick={openConsultationModal}
                       className="w-full py-3 bg-brand-gradient text-white rounded-btn font-bold text-xs hover:opacity-90 transition text-center shadow-sm"
                     >
-                      Enroll Now
+                      Join Immediately
                     </button>
                   </>
                 )}

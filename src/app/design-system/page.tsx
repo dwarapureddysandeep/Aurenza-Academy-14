@@ -180,7 +180,7 @@ export default function DesignSystemPage() {
               <div>
                 <span className="text-[9px] text-textSecondary block uppercase mb-1">CTA with icon</span>
                 <button type="button" className="btn-primary gap-2">
-                  Enroll Now <Sparkles className="w-4 h-4 text-white" />
+                  Join Immediately <Sparkles className="w-4 h-4 text-white" />
                 </button>
               </div>
             </div>
@@ -297,10 +297,9 @@ export default function DesignSystemPage() {
 
                 {/* Pricing & Checkout link */}
                 <div className="flex justify-between items-baseline pt-2">
-                  <span className="text-xs font-bold text-textSecondary uppercase tracking-wider">Tuition Fees</span>
+                  <span className="text-xs font-bold text-textSecondary uppercase tracking-wider">Program Level</span>
                   <div className="text-right">
-                    <span className="text-xs text-textSecondary line-through font-bold block">₹34,999</span>
-                    <span className="text-lg font-black text-successGreen block">₹24,999</span>
+                    <span className="text-sm font-black text-primary block">Advanced</span>
                   </div>
                 </div>
 
@@ -310,7 +309,7 @@ export default function DesignSystemPage() {
                     View Details
                   </button>
                   <button type="button" className="btn-primary flex-1 h-10 text-xs px-4">
-                    Enroll Now
+                    Join Immediately
                   </button>
                 </div>
 

@@ -300,6 +300,16 @@ export default function AuriChatbot() {
                         </div>
                       </div>
 
+                      {/* Detailed AI Report */}
+                      {analysisResult.fullReport && (
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Detailed AI Screening Report</p>
+                          <div className="bg-sectionBg border border-borderLight p-3.5 rounded-2xl max-h-[220px] overflow-y-auto font-mono text-[9px] text-textPrimary leading-relaxed whitespace-pre-wrap">
+                            {analysisResult.fullReport}
+                          </div>
+                        </div>
+                      )}
+
                       <button
                         onClick={() => {
                           setAnalysisResult(null);

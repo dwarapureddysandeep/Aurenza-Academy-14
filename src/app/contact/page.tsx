@@ -1,11 +1,12 @@
 import React from 'react';
 import ContactForm from '@/components/contact-form';
-import { Phone, Mail, MapPin, MessageSquare, ShieldCheck } from 'lucide-react';
+import { Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import WhatsAppContactButton from '@/components/whatsapp-contact-button';
 
 export const metadata = {
   title: "Contact Our Advising Office - Aurenza Academy",
-  description: "Get in touch with Aurenza Academy. Inquire about weekend cohorts, tuition plans, placement assistance referrals, or book 1-on-1 counselor callbacks."
+  description: "Get in touch with Aurenza Academy. Inquire about weekend cohorts, career pathways, placement assistance referrals, or book 1-on-1 counselor callbacks."
 };
 
 export default function ContactPage() {
@@ -40,7 +41,7 @@ export default function ContactPage() {
                   <MapPin className="w-5 h-5 text-applePink shrink-0 mt-0.5" />
                   <div>
                     <h5 className="font-bold text-white">Academy HQ Office</h5>
-                    <p className="text-xs text-neutral-400 mt-1">Cyber Towers, Phase 1, Hitech City, Hyderabad, India - 500081</p>
+                    <p className="text-xs text-neutral-400 mt-1">Gajuwaka, Vishakapatanam, India</p>
                   </div>
                 </div>
 
@@ -62,20 +63,14 @@ export default function ContactPage() {
               </div>
 
               <div className="pt-2">
-                <Link 
-                  href="https://wa.me/917013057827?text=Hello!%20I%20wish%20to%20enquire%20about%20your%20upcoming%20batches." 
-                  target="_blank"
-                  className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 text-green-400 font-bold transition justify-center text-xs"
-                >
-                  <MessageSquare className="w-4 h-4" /> Direct Chat on WhatsApp
-                </Link>
+                <WhatsAppContactButton />
               </div>
             </div>
 
             {/* Embedded Google Maps */}
             <div className="h-64 rounded-3xl overflow-hidden border border-white/[0.08] bg-[#0E061A]">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.3190827299066!2d78.38029587600216!3d17.444390901170707!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb93e45391c4d9%3A0x6b8c9df1fb8b196b!2sCyber%20Towers!5e0!3m2!1sen!2sin!4v1717088923412!5m2!1sen!2sin" 
+                src="https://maps.google.com/maps?q=Gajuwaka,%20Vishakapatanam,%20India&t=&z=15&ie=UTF8&iwloc=&output=embed" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0, opacity: 0.7 }} 

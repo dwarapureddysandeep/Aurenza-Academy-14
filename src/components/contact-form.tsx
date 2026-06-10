@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { submitConsultationLead } from '@/lib/actions';
 import { CheckCircle2, User, Mail, Phone, GraduationCap } from 'lucide-react';
+import LoadingSpinner from './loading-spinner';
 
 export default function ContactForm() {
   const [loading, setLoading] = useState(false);
@@ -128,7 +129,7 @@ export default function ContactForm() {
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Specify your questions or ask about tuition fees..."
+          placeholder="Specify your questions or ask about dynamic cohorts..."
           rows={3}
           className="glass-input text-xs py-2.5 resize-none font-sans"
         />
@@ -139,7 +140,12 @@ export default function ContactForm() {
         disabled={loading}
         className="w-full py-3.5 rounded-[14px] bg-primary hover:bg-primaryHover text-xs font-black text-white hover:shadow-glowPurple transition flex items-center justify-center gap-2"
       >
-        {loading ? "Transmitting Query..." : "Send Message Now →"}
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <LoadingSpinner size="sm" className="brightness-150 text-white" />
+            Transmitting Query...
+          </span>
+        ) : "Send Message Now →"}
       </button>
 
     </form>

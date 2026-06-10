@@ -9,7 +9,10 @@ import { Toaster } from "react-hot-toast";
 export const metadata: Metadata = {
   title: "Aurenza Academy - Premium Global IT & AI Career Certifications",
   description: "Transform your career with industry-recognized certifications. Enroll in elite live cohorts for Java Full Stack, Next.js UI Engineering, Data Science, and Machine Learning with direct placement referrals.",
-  keywords: ["Aurenza Academy", "PMP Certification", "CAPM prep", "Java Full Stack Development", "Next.js certification", "Machine Learning Bootcamp", "AI career training", "Hiring Partners", "Hyderabad EdTech"],
+  icons: {
+    icon: "/logo.png",
+  },
+  keywords: ["Aurenza Academy", "PMP Certification", "CAPM prep", "Java Full Stack Development", "Next.js certification", "Machine Learning Bootcamp", "AI career training", "Hiring Partners", "Visakhapatnam EdTech"],
   metadataBase: new URL("https://www.aurenzaacademy.com"),
   openGraph: {
     title: "Aurenza Academy | Advance Your Career With Elite Certifications",

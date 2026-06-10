@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { Clock, Users, Star, BookOpen, User, Calendar, MessageSquare, ArrowRight, ShieldCheck, Sparkles, Award, PlayCircle } from 'lucide-react';
 import { db } from '@/lib/db';
 import FAQAccordion from '@/components/faq-accordion';
-import CounselingButton from '@/components/counseling-button';
+import CourseActionsWidget from '@/components/course-actions-widget';
+import ReserveSeatButton from '@/components/reserve-seat-button';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -126,31 +127,14 @@ export default async function CourseDetailPage({ params }: PageProps) {
               
               <div className="space-y-6">
                 <div>
-                  <span className="text-[10px] font-bold text-[#7E8B9B] uppercase tracking-wider block">Program Fee Tuition</span>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-3xl font-black text-textPrimary heading">₹{course.price.toLocaleString()}</span>
-                    <span className="text-xs font-bold text-textSecondary line-through">₹{(course.price * 1.4).toFixed(0).slice(0,-3) + '000'}</span>
-                    <span className="text-xs font-extrabold text-successGreen bg-successGreen/5 border border-successGreen/10 px-2 py-0.5 rounded">30% OFF</span>
-                  </div>
-                  <p className="text-[10px] text-textSecondary mt-1">Inclusive of all local taxes. Standard EMI plans starting at ₹2,900/month.</p>
+                  <span className="text-[10px] font-bold text-[#7E8B9B] uppercase tracking-wider block">Join a Cohort</span>
+                  <h3 className="text-lg font-black text-textPrimary heading mt-1">Submit Enquiry</h3>
+                  <p className="text-[11px] text-textSecondary mt-1.5 leading-relaxed">
+                    Weekend live cohorts are led by active technology directors. Submit an enquiry to reserve your seat, schedule a counseling callback, or get direct curriculum referrals.
+                  </p>
                 </div>
 
-                <div className="space-y-3">
-                  <Link
-                    href={`/checkout/${course.id}`}
-                    className="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-accent text-xs font-black text-white hover:opacity-95 transition flex items-center justify-center gap-2 hover:shadow-neonPurple uppercase tracking-wider text-center"
-                  >
-                    Enroll Now &rarr;
-                  </Link>
-
-                  <CounselingButton
-                    source={`Course Detail Hero: ${course.name}`}
-                    prefilledCourse={course.name}
-                    className="w-full py-4 rounded-xl bg-sectionBg hover:bg-[#F1F5F9] border border-[#C8D1E0] text-xs font-bold text-textPrimary transition uppercase tracking-wider text-center"
-                  >
-                    Download Syllabus & PDF
-                  </CounselingButton>
-                </div>
+                <CourseActionsWidget courseName={course.name} courseId={course.id} />
 
                 <div className="pt-4 border-t border-borderLight space-y-3.5 text-xs text-textSecondary">
                   <div className="flex items-center gap-2">
@@ -332,12 +316,11 @@ export default async function CourseDetailPage({ params }: PageProps) {
                           </span>
                         </td>
                         <td className="p-5 text-right">
-                          <Link
-                            href={`/checkout/${course.id}`}
-                            className="inline-block px-4 py-2 rounded-lg bg-primary hover:bg-primaryHover text-[10px] text-white tracking-wider uppercase transition shadow-soft font-black"
-                          >
-                            Reserve Seat &rarr;
-                          </Link>
+                          <ReserveSeatButton 
+                            courseName={course.name} 
+                            startDate={batch.startDate} 
+                            timeSlot={batch.timeSlot} 
+                          />
                         </td>
                       </tr>
                     ))

@@ -36,20 +36,10 @@ export default async function AdminDashboardPage() {
   const corporateLeads = await db.corporateLead.findMany();
   const courses = await db.course.findMany();
   const batches = await db.batch.findMany();
-  const students = await db.user.findMany({ where: { role: 'STUDENT' } });
-  const payments = await db.payment.findMany();
-  const certificates = await db.certificate.findMany();
   const trainers = await db.trainer.findMany();
   const categories = await db.category.findMany();
   const testimonials = await db.testimonial.findMany();
   const blogs = await db.blog.findMany();
-  
-  // Fetch Notification settings and logs (Phase 9)
-  const notificationSettings = await db.notificationSetting.findMany();
-  const notificationLogs = await db.notificationLog.findMany();
-
-  // Aggregate metrics
-  const totalRevenue = payments.reduce((acc: number, curr: any) => acc + curr.amount, 0);
 
   return (
     <div className="min-h-screen bg-sectionBg text-textPrimary py-12 px-4 sm:px-6 lg:px-8 font-sans">
@@ -67,7 +57,7 @@ export default async function AdminDashboardPage() {
               Admin & CRM Dashboard, <span className="text-gradient-purple-pink">Aurenza Academy</span>
               <Sparkles className="w-5 h-5 text-secondary" />
             </h2>
-            <p className="text-xs text-textSecondary">Review business metrics, manage courses/categories, schedule live batches, track revenues/refunds, moderate reviews, write blogs, and update settings.</p>
+            <p className="text-xs text-textSecondary">Review course enquiries, manage course listings, schedule live batches, moderate reviews, write blogs, and update settings.</p>
           </div>
           
           <div className="bg-white border border-borderLight rounded-2xl px-4 py-2.5 flex items-center gap-2 text-xs text-textPrimary font-semibold shadow-soft">
@@ -76,13 +66,12 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Top Metrics Row (6 Key Stats as requested) */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+        {/* Top Metrics Row */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
           {[
-            { title: "Total Students", value: students.length, color: "text-primary", icon: <Users className="w-4 h-4 text-primary" /> },
+            { title: "Course Enquiries", value: leads.length, color: "text-primary", icon: <Users className="w-4 h-4 text-primary" /> },
             { title: "Total Courses", value: courses.length, color: "text-secondary", icon: <Layers className="w-4 h-4 text-secondary" /> },
             { title: "Total Tutors", value: trainers.length, color: "text-amber-500", icon: <Users className="w-4 h-4 text-amber-500" /> },
-            { title: "Total Revenue", value: `₹${totalRevenue.toLocaleString('en-IN')}`, color: "text-successGreen", icon: <IndianRupee className="w-4 h-4 text-successGreen" /> },
             { title: "Active Batches", value: batches.length, color: "text-blue-500", icon: <Award className="w-4 h-4 text-blue-500" /> },
             { title: "Corporate Leads", value: corporateLeads.length, color: "text-rose-500", icon: <Users className="w-4 h-4 text-rose-500" /> }
           ].map((stat, idx) => (
@@ -102,15 +91,15 @@ export default async function AdminDashboardPage() {
           initialCorporateLeads={corporateLeads}
           courses={courses}
           batches={batches}
-          students={students}
+          students={[]}
           trainers={trainers}
           categories={categories}
-          payments={payments}
-          certificates={certificates}
+          payments={[]}
+          certificates={[]}
           testimonials={testimonials}
           blogs={blogs}
-          notificationSettings={notificationSettings}
-          notificationLogs={notificationLogs}
+          notificationSettings={[]}
+          notificationLogs={[]}
         />
 
       </div>

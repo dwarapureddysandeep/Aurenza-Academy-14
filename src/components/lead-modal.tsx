@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, User, Mail, Phone, GraduationCap, CheckCircle2 } from 'lucide-react';
 import { submitConsultationLead } from '@/lib/actions';
+import LoadingSpinner from './loading-spinner';
 
 const COURSES_LIST = [
   "Java Full Stack Development",
@@ -40,6 +41,11 @@ export default function LeadModal() {
       if (e.detail?.prefilledCourse) {
         setCourse(e.detail.prefilledCourse);
       }
+      if (e.detail?.message) {
+        setMessage(e.detail.message);
+      } else {
+        setMessage('');
+      }
       setSuccess(false);
       setIsOpen(true);
     };
@@ -52,7 +58,7 @@ export default function LeadModal() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !phone || !course) return;
+    if (!name || !phone || !course) return;
 
     setLoading(true);
     const res = await submitConsultationLead({
@@ -60,7 +66,7 @@ export default function LeadModal() {
       email,
       phone,
       course,
-      message: message ? `${message} (Source: ${source})` : `Booked consultation via: ${source}`
+      message: message ? `${message} (Source: ${source})` : `Enquired via: ${source}`
     });
 
     setLoading(false);
@@ -144,11 +150,10 @@ export default function LeadModal() {
               {/* Contact Email */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-bold text-neutral-300 uppercase tracking-wide flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-applePurple" /> Corporate Email
+                  <Mail className="w-3.5 h-3.5 text-applePurple" /> Email Address (Optional)
                 </label>
                 <input
                   type="email"
-                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. sandeep@gmail.com"
@@ -206,7 +211,12 @@ export default function LeadModal() {
                 disabled={loading}
                 className="w-full py-4 rounded-xl bg-gradient-to-r from-applePurple to-applePink text-xs sm:text-sm font-black text-white hover:opacity-90 transition flex items-center justify-center gap-2 hover:shadow-neonPink mt-2"
               >
-                {loading ? "Allocating Counselor..." : "Book Session Now →"}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <LoadingSpinner size="sm" className="brightness-150 text-white" />
+                    Allocating Counselor...
+                  </span>
+                ) : "Book Session Now →"}
               </button>
 
             </form>

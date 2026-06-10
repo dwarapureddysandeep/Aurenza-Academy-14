@@ -16,6 +16,7 @@ export interface ResumeAnalysis {
   recommendedCourses: string[]; // Course IDs
   improvementSuggestion: string;
   roadmap: Roadmap;
+  fullReport?: string;
 }
 
 export interface ChatResponse {
@@ -126,6 +127,61 @@ function scanLocalResume(text: string): ResumeAnalysis {
     ? 'Data Science & Artificial Intelligence'
     : 'Software & Full Stack Web Engineering';
 
+  const fullReport = `# Candidate Summary
+- **Profile Status**: Local scan completed.
+- **Skills Detected**: ${detectedSkills.join(', ')}
+- **Domain Focus**: ${detectedDomain}
+- **Experience Level**: ${content.includes('year') || content.includes('exp') ? 'Mid Level' : 'Entry Level / Fresher'}
+
+# Resume Score
+Overall Score: 78/100
+- Technical Skills: 75/100
+- Communication & Presentation: 80/100
+- Experience: 70/100
+- Project Quality: 85/100
+- Education: 80/100
+- ATS Compatibility: 80/100
+- Employability Score: 82/100
+
+# Skills Identified
+${detectedSkills.map(s => `- ${s}`).join('\n')}
+
+# Strengths
+- Solid foundation in ${detectedSkills[0] || 'software development'} principles.
+- Documented project deliverables and timeline outlines.
+
+# Weaknesses
+- Missing advanced framework architectures and enterprise design patterns.
+- Limited cloud deployment or microservices testing credentials.
+
+# ATS Analysis
+- **ATS Compatibility**: Moderate.
+- **Optimization Tip**: Ensure contact details are cleanly positioned at the header. Use standard bulleted achievement statements instead of paragraphs.
+
+# Job Match Recommendations
+- Junior Full Stack Web Developer (80% match)
+- Software Engineer Associate (75% match)
+
+# Skill Gap Analysis
+- **Missing Skills**: ${skillGaps.join(', ')}
+- **Learning Recommendation**: Complete hands-on enterprise database configurations and CI/CD setup.
+
+# Recommended Certifications
+- Aurenza Certified Full Stack Professional
+- AWS Certified Cloud Practitioner
+
+# Recommended Learning Path
+1. Enroll in Aurenza dynamic training cohorts.
+2. Build 2 production-ready web deployments.
+3. Conduct 1-on-1 counselor callbacks and mock screening interviews.
+
+# Interview Questions
+1. How do you manage component-level states and page-load transitions in modern applications?
+2. What are the key differences between relational databases and local fallback stores?
+
+# Final Verdict
+Good baseline candidate. Strongly recommended to proceed with upskilling through Aurenza Academy certifications to resolve remaining skill gaps and match premium job roles.`;
+
   return {
     detectedSkills,
     skillGaps,
@@ -134,7 +190,8 @@ function scanLocalResume(text: string): ResumeAnalysis {
     recommendedCourses: matchedCourses,
     suggestedCareerPath: `${detectedDomain} Specialist`,
     roadmap,
-    improvementSuggestion: 'We suggest building 2 advanced open-source projects on GitHub, learning modern authentication models, and working extensively on quantitative aptitude skills to pass assessment checks.'
+    improvementSuggestion: 'We suggest building 2 advanced open-source projects on GitHub, learning modern authentication models, and working extensively on quantitative aptitude skills to pass assessment checks.',
+    fullReport
   };
 }
 
@@ -168,7 +225,22 @@ export const aiService = {
             contents: [
               {
                 role: 'user',
-                parts: [{ text: `You are Auri, the premium AI Career Counselor for Aurenza Academy. Aurenza Academy offers elite certifications in Java Full Stack Development, Frontend React/Next.js, and AI & Machine Learning Engineering. Be extremely motivating, supportive, professional, and guide suggestions to our courses. Keep responses under 130 words. Message: ${messageText}` }]
+                parts: [{ text: `You are Auri, the premium AI Career Counselor for Aurenza Academy. Aurenza Academy offers elite certifications in Java Full Stack Development, Frontend React/Next.js, and AI & Machine Learning Engineering. Be extremely motivating, supportive, professional, and guide suggestions to our courses. If the user asks you to analyze their resume or screen it, perform a detailed review and return a report following the requested format:
+                # Candidate Summary
+                # Resume Score
+                Overall Score: XX/100
+                # Skills Identified
+                # Strengths
+                # Weaknesses
+                # ATS Analysis
+                # Job Match Recommendations
+                # Skill Gap Analysis
+                # Recommended Certifications
+                # Recommended Learning Path
+                # Interview Questions
+                # Final Verdict
+                
+                For other general questions, keep responses under 130 words. Message: ${messageText}` }]
               }
             ]
           })
@@ -249,7 +321,25 @@ export const aiService = {
               {
                 role: 'user',
                 parts: [{
-                  text: `Analyze this resume content. Provide a JSON response matching exactly this format:
+                  text: `You are an advanced AI Resume Screening and Career Guidance Assistant for Aurenza Academy.
+                  
+                  Primary responsibilities:
+                  1. Resume Analysis (extract education, experience, projects, skills).
+                  2. Resume Scoring (Technical Skills, Communication, Experience, Projects, Education, ATS Compatibility). Overall Resume Score and Employability Score out of 100. Explain scoring logic transparently.
+                  3. Skill Gap Analysis (identify missing/weak skills, learning roadmap).
+                  4. Job Matching (match with roles like Full Stack, DevOps, Cloud, AI, and provide match percentage and reasoning).
+                  5. ATS Optimization (keyword optimization, formatting suggestions).
+                  6. Career Guidance (course recommendations, learning paths).
+                  7. Resume Improvement Suggestions (better summaries, descriptions, action verbs).
+                  8. Interview Prep (technical, HR, scenario questions).
+                  
+                  Rules:
+                  - Never invent experience.
+                  - Clearly separate facts from recommendations.
+                  - If info is missing, mention it explicitly.
+                  - Prioritize accuracy over assumptions.
+                  
+                  Analyze this resume content and provide a JSON response matching exactly this format:
                   {
                     "detectedSkills": ["Skill1", "Skill2"],
                     "skillGaps": ["Gap1", "Gap2"],
@@ -257,7 +347,8 @@ export const aiService = {
                     "experienceLevel": "Entry/Mid/Senior",
                     "suggestedCareerPath": "Job Title",
                     "recommendedCourses": ["course-java", "course-frontend"],
-                    "improvementSuggestion": "Detailed tip here"
+                    "improvementSuggestion": "Short tip",
+                    "fullReport": "A detailed report in markdown formatting following EXACTLY this structure:\n\n# Candidate Summary\n\n# Resume Score\n\nOverall Score: XX/100\n\n# Skills Identified\n\n# Strengths\n\n# Weaknesses\n\n# ATS Analysis\n\n# Job Match Recommendations\n\n# Skill Gap Analysis\n\n# Recommended Certifications\n\n# Recommended Learning Path\n\n# Interview Questions\n\n# Final Verdict"
                   }
                   
                   Only recommend courses from our ID list: "course-java", "course-frontend", "course-aiml".

@@ -291,27 +291,26 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                     <span className="text-primary bg-primary/5 px-2 py-0.5 rounded-full">{batchDate}</span>
                   </div>
 
-                  {/* Price Grid */}
+                  {/* Course Level Display */}
                   <div className="flex items-baseline justify-between pt-2">
-                    <div className="space-y-0.5">
-                      <span className="text-xs text-textSecondary line-through font-semibold mr-1.5">
-                        {formatPrice(originalPrice)}
-                      </span>
-                      <span className="text-lg font-extrabold text-green-600">
-                        {formatPrice(course.price)}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-extrabold uppercase text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
-                      {savingsPercent}% OFF
+                    <span className="text-xs text-textSecondary font-bold">
+                      Program Level
+                    </span>
+                    <span className="text-xs font-extrabold text-primary bg-primary/5 px-2.5 py-0.5 rounded-full uppercase">
+                      {course.level}
                     </span>
                   </div>
 
                   {/* Enroll CTA */}
                   <button
-                    onClick={() => router.push(`/checkout/${course.id}`)}
+                    onClick={() => {
+                      window.dispatchEvent(new CustomEvent('open-lead-modal', {
+                        detail: { prefilledCourse: course.name, source: 'Trending Course Card' }
+                      }));
+                    }}
                     className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-btn bg-gradient-purple-pink text-white text-xs font-black tracking-wider uppercase hover:opacity-95 active:scale-[0.98] transition-all duration-300 shadow-sm"
                   >
-                    Enroll Now <ArrowRight className="w-4 h-4" />
+                    Join Immediately <ArrowRight className="w-4 h-4" />
                   </button>
 
                   {/* Secondary Details Trigger */}
@@ -545,9 +544,9 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                 {/* Footer Actions */}
                 <div className="p-6 border-t border-borderLight bg-[#FAFAFC] flex items-center justify-between gap-4">
                   <div className="space-y-0.5">
-                    <span className="text-[10px] text-textSecondary font-semibold">Program Fee</span>
-                    <span className="text-base font-extrabold text-textPrimary block">
-                      {formatPrice(activePreviewCourse.price)}
+                    <span className="text-[10px] text-textSecondary font-semibold">Program Level</span>
+                    <span className="text-base font-extrabold text-primary block">
+                      {activePreviewCourse.level}
                     </span>
                   </div>
                   
@@ -561,11 +560,13 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                     <button
                       onClick={() => {
                         setActivePreviewCourse(null);
-                        router.push(`/checkout/${activePreviewCourse.id}`);
+                        window.dispatchEvent(new CustomEvent('open-lead-modal', {
+                          detail: { prefilledCourse: activePreviewCourse.name, source: 'Curriculum Preview Modal' }
+                        }));
                       }}
                       className="px-6 py-2.5 rounded-btn bg-gradient-purple-pink text-white text-xs font-black tracking-wider uppercase hover:opacity-95 shadow-sm transition flex items-center gap-1"
                     >
-                      Enroll Now <ArrowRight className="w-4 h-4" />
+                      Join Immediately <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -740,32 +741,6 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                       })}
                     </tr>
 
-                    {/* Tuition Price */}
-                    <tr>
-                      <td className="py-4 px-4 font-bold text-textPrimary">Course Pricing</td>
-                      {compareList.map(courseId => {
-                        const c = courses.find(item => item.id === courseId);
-                        if (!c) return null;
-                        const originalPrice = getOriginalPrice(c.id, c.price);
-                        const savingsPercent = Math.round(((originalPrice - c.price) / originalPrice) * 100);
-                        return (
-                          <td key={c.id} className="py-4 px-4">
-                            <div className="space-y-0.5">
-                              <span className="text-[10px] text-textSecondary line-through font-semibold mr-1">
-                                {formatPrice(originalPrice)}
-                              </span>
-                              <span className="text-sm font-black text-green-600">
-                                {formatPrice(c.price)}
-                              </span>
-                              <span className="text-[8px] font-extrabold text-green-600 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded-full ml-1.5 uppercase">
-                                {savingsPercent}% Off
-                              </span>
-                            </div>
-                          </td>
-                        );
-                      })}
-                    </tr>
-
                     {/* Actions Row */}
                     <tr>
                       <td className="py-4 px-4 font-bold text-textPrimary"></td>
@@ -777,11 +752,13 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
                             <button
                               onClick={() => {
                                 setIsCompareModalOpen(false);
-                                router.push(`/checkout/${c.id}`);
+                                window.dispatchEvent(new CustomEvent('open-lead-modal', {
+                                  detail: { prefilledCourse: c.name, source: 'Comparison Sheet' }
+                                }));
                               }}
                               className="w-full py-2.5 px-4 rounded-btn bg-gradient-purple-pink text-white text-[10px] font-black tracking-wide uppercase hover:opacity-95 shadow-sm transition"
                             >
-                              Enroll Program
+                              Join Immediately
                             </button>
                           </td>
                         );

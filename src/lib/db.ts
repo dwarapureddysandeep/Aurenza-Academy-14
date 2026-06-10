@@ -24,7 +24,7 @@ if (hasDatabaseUrl) {
   }
 }
 
-export const USE_LOCAL_MOCK = !hasDatabaseUrl || !prismaInstance;
+export const USE_LOCAL_MOCK = true;
 console.log(`[Aurenza Database] Mode: ${USE_LOCAL_MOCK ? 'OFFLINE LOCAL JSON FALLBACK' : 'LIVE SUPABASE POSTGRESQL'}`);
 
 // ==========================================
@@ -166,7 +166,8 @@ const DEFAULT_MOCK_DATA = {
         { q: "Can I do this course part-time?", a: "Yes! All lectures are live-streamed on weekends and recorded in 4K resolution for asynchronous self-paced review." }
       ]),
       createdAt: new Date().toISOString()
-    }
+    },
+    ...require('./generated_array.json')
   ],
   trainers: [
     { id: "trainer-1", name: "Dr. Ramesh Kumar", email: "trainer@aurenzaacademy.com", avatar: "RK", bio: "Ex-Amazon Senior Java Architect", specialty: "Java Full Stack & System Design", createdAt: new Date().toISOString() },

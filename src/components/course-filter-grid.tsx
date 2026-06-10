@@ -167,13 +167,13 @@ export default function CourseFilterGrid({ initialCourses }: CourseFilterGridPro
                         </div>
                       </div>
 
-                      {/* Pricing with Start From text on top */}
+                      {/* Course Level Display */}
                       <div className="text-right">
                         <span className="text-[9px] font-bold text-[#7E8B9B] uppercase block tracking-wider leading-none">
-                          Start from
+                          Level
                         </span>
-                        <span className="text-[16px] font-black text-[#10B981] mt-0.5 block">
-                          ₹{course.price.toLocaleString()}
+                        <span className="text-[12px] font-black text-primary mt-1 block">
+                          {course.level}
                         </span>
                       </div>
                     </div>

@@ -335,7 +335,7 @@ export default async function HomePage() {
                   </div>
                   <div>
                     <h5 className="font-extrabold text-textPrimary heading">Academy Head Office</h5>
-                    <p className="text-xs text-textSecondary mt-1">Cyber Towers, Phase 1, Hitech City, Hyderabad, India - 500081</p>
+                    <p className="text-xs text-textSecondary mt-1">Gajuwaka, Vishakapatanam, India</p>
                   </div>
                 </div>
 
@@ -363,7 +363,7 @@ export default async function HomePage() {
               {/* HQ Map overlay */}
               <div className="relative h-64 w-full rounded-2xl overflow-hidden border border-borderLight bg-sectionBg">
                 <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3806.3190827299066!2d78.38029587600216!3d17.444390901170707!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb93e45391c4d9%3A0x6b8c9df1fb8b196b!2sCyber%20Towers!5e0!3m2!1sen!2sin!4v1717088923412!5m2!1sen!2sin" 
+                  src="https://maps.google.com/maps?q=Gajuwaka,%20Vishakapatanam,%20India&t=&z=15&ie=UTF8&iwloc=&output=embed" 
                   width="100%" 
                   height="100%" 
                   style={{ border: 0, opacity: 0.8 }} 

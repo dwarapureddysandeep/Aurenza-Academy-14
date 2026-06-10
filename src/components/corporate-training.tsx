@@ -9,6 +9,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import LoadingSpinner from './loading-spinner';
 
 interface BenefitCard {
   icon: React.ReactNode;
@@ -299,9 +300,14 @@ export default function CorporateTraining() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 rounded-[12px] bg-gradient-purple-pink text-white text-xs font-black tracking-wider uppercase hover:opacity-95 active:scale-[0.98] transition shadow-sm"
+                    className="w-full py-3.5 rounded-[12px] bg-gradient-purple-pink text-white text-xs font-black tracking-wider uppercase hover:opacity-95 active:scale-[0.98] transition shadow-sm flex items-center justify-center gap-2"
                   >
-                    {loading ? "Allocating Account Executive..." : "Request Upskilling Proposal"}
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <LoadingSpinner size="sm" className="brightness-150 text-white" />
+                        Allocating Account Executive...
+                      </span>
+                    ) : "Request Upskilling Proposal"}
                   </button>
                 </form>
 
