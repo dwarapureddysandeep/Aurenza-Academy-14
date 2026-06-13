@@ -24,7 +24,6 @@ export default async function HomePage() {
   const testimonials = await db.testimonial.findMany();
   const batches = await db.batch.findMany();
   const webinars = await db.webinar.findMany();
-  const blogs = await db.blog.findMany();
 
   return (
     <div className="w-full bg-white text-textPrimary overflow-x-hidden font-sans">
@@ -213,72 +212,6 @@ export default async function HomePage() {
                   Register For Free Session
                 </CounselingButton>
               </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* ==========================================
-         SECTION 9: BLOGS HUB SEO GRID (White Background)
-         ========================================== */}
-      <section className="py-24 border-t border-borderLight bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-14">
-            <div className="space-y-1 sm:text-left text-center">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Career Insights</span>
-              <h2 className="text-3xl font-extrabold text-textPrimary heading">
-                Latest From Our <span className="text-gradient-purple-pink">Blogs Hub</span>
-              </h2>
-            </div>
-            <Link
-              href="/blog"
-              className="px-5 py-2.5 rounded-full border border-borderLight bg-sectionBg text-xs font-bold text-textSecondary hover:text-primary hover:border-primary transition flex items-center gap-1.5"
-            >
-              Browse All Articles <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {blogs.map((blog: any) => (
-              <article 
-                key={blog.id}
-                className="group premium-glass-card overflow-hidden flex flex-col justify-between h-[420px] p-4.5 hover:-translate-y-1 transition duration-300"
-              >
-                <div className="space-y-4">
-                  {/* Blog Image */}
-                  <div className="h-40 rounded-[18px] bg-neutral-100 overflow-hidden border border-borderLight relative">
-                    <img 
-                      src={blog.image} 
-                      alt={blog.title}
-                      className="w-full h-full object-cover transition duration-300 group-hover:scale-105"
-                    />
-                    <span className="absolute left-3 top-3 px-2 py-0.5 rounded bg-white text-[8px] font-bold text-primary uppercase border border-borderLight tracking-widest">
-                      {blog.category}
-                    </span>
-                  </div>
-
-                  {/* Text details */}
-                  <div className="space-y-2">
-                    <Link href={`/blog/${blog.slug}`}>
-                      <h3 className="text-sm sm:text-base font-extrabold text-textPrimary group-hover:text-primary transition line-clamp-2 leading-snug heading">
-                        {blog.title}
-                      </h3>
-                    </Link>
-                    <p className="text-xs text-textSecondary line-clamp-2 leading-relaxed">
-                      {blog.content}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between border-t border-borderLight pt-3.5 mt-4 text-[10px] text-textSecondary font-bold">
-                  <span>VIEWS: {blog.views}</span>
-                  <Link href={`/blog/${blog.slug}`} className="text-primary hover:underline flex items-center gap-0.5">
-                    Read Article <ChevronRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </article>
             ))}
           </div>
 

@@ -122,7 +122,7 @@ export default function CourseFilterGrid({ initialCourses }: CourseFilterGridPro
             return (
               <article
                 key={course.id}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-[8px] border border-[#ECECF4] bg-white shadow-soft hover:shadow-premium transition-all duration-300 hover:-translate-y-1"
+                className="group relative flex flex-col justify-between overflow-hidden rounded-[8px] border border-[#ECECF4] bg-white shadow-soft hover:shadow-premium transition-all duration-300 hover:-translate-y-1 h-full"
               >
                 {/* Course Image & Badge Overlay */}
                 <div className="relative h-48 w-full bg-[#F1F5F9] border-b border-[#ECECF4]">

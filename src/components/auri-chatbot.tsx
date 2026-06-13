@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bot, X, Send, Sparkles, AlertCircle, FileText, ArrowRight, CheckCircle2, ChevronRight } from 'lucide-react';
 import { getAIChatResponseAction, analyzeResumeAction } from '@/lib/actions';
 import toast from 'react-hot-toast';
+import LoadingSpinner from './loading-spinner';
 
 interface Message {
   id: string;
@@ -216,10 +217,9 @@ export default function AuriChatbot() {
                 ))}
 
                 {isTyping && (
-                  <div className="flex items-center gap-1 bg-sectionBg border border-borderLight p-3 rounded-2xl rounded-bl-none max-w-[80px]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce"></span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-bounce [animation-delay:0.2s]"></span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.4s]"></span>
+                  <div className="flex items-center gap-2 bg-sectionBg border border-borderLight px-4 py-2.5 rounded-2xl rounded-bl-none max-w-[100px] justify-center">
+                    <LoadingSpinner size="xs" />
+                    <span className="text-[10px] font-extrabold text-primary animate-pulse">Auri...</span>
                   </div>
                 )}
                 

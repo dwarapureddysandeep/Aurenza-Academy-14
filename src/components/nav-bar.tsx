@@ -128,15 +128,12 @@ export default function NavBar() {
         <div className="max-w-[1280px] w-full mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6">
           
           {/* Logo & Brand Name */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0 select-none">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0 select-none group" aria-label="Aurenza">
             <img
-              src="/logo.png"
-              alt="Aurenza Academy Logo"
-              className="h-9 w-9 object-contain"
+              src="/aurenza-logo.png"
+              alt="Aurenza"
+              className="h-[32px] sm:h-[36px] w-auto object-contain transition-all duration-300 group-hover:scale-[1.02] group-hover:filter group-hover:drop-shadow-[0_0_8px_rgba(122,0,140,0.15)]"
             />
-            <span className="font-heading font-extrabold text-xl text-primary tracking-tight">
-              Aurenza Academy
-            </span>
           </Link>
 
           {/* Center Navigation Links (spacing 24px - 32px) */}

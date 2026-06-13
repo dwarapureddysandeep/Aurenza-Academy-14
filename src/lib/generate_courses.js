@@ -13,8 +13,15 @@ const CATEGORIES = {
 };
 
 const COURSES_TO_GENERATE = [
-  { name: "CSM Certification", cat: "cat-1", level: "Beginner" },
-  { name: "PMP Certification", cat: "cat-1", level: "Intermediate -> Advanced" },
+  // 6 Trending Courses explicitly added with precise IDs
+  { name: "AWS Solutions Architect", cat: "cat-4", level: "Intermediate", id: "course-aws" },
+  { name: "PMP Certification", cat: "cat-1", level: "Intermediate -> Advanced", id: "course-pmp" },
+  { name: "Certified ScrumMaster (CSM)", cat: "cat-1", level: "Beginner", id: "course-csm" },
+  { name: "Microsoft Azure Administrator", cat: "cat-4", level: "Intermediate", id: "course-azure" },
+  { name: "Data Science & AI Bootcamp", cat: "cat-2", level: "Intermediate -> Advanced", id: "course-dsai" },
+  { name: "DevOps Engineer Program", cat: "cat-5", level: "Intermediate", id: "course-devops" },
+
+  // Remaining Flagship Certifications
   { name: "CSPO Certification", cat: "cat-1", level: "Beginner" },
   { name: "Leading SAFe 6.0 Certification", cat: "cat-1", level: "Intermediate" },
   { name: "ITIL Foundation Certification", cat: "cat-1", level: "Beginner" },
@@ -60,26 +67,69 @@ const MENTORS = [
   { name: "Dr. Ramesh Kumar", exp: "12+ Years Exp at Oracle & Amazon", avatar: "RK", bio: "Software architect and project delivery analyst." }
 ];
 
-const UNSPLASH_IMAGES = [
-  "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1531535934202-f0d45367ed9b?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80"
-];
+// Helper mapping relevant Unsplash images to specific courses and categories
+function getPremiumImageForCourse(name, catId) {
+  const n = name.toLowerCase();
+  
+  if (n.includes('aws') || n.includes('amazon')) {
+    return "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80"; // cloud architecture
+  }
+  if (n.includes('azure') || n.includes('microsoft')) {
+    return "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=800&q=80"; // enterprise infrastructure
+  }
+  if (n.includes('devops') || n.includes('docker') || n.includes('kubernetes')) {
+    return "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=800&q=80"; // devops pipeline
+  }
+  if (n.includes('java') || n.includes('full stack') || n.includes('frontend') || n.includes('react') || n.includes('scrum developer')) {
+    return "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"; // code IDE editor
+  }
+  if (n.includes('power bi')) {
+    return "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80"; // dashboard
+  }
+  if (n.includes('data science') || n.includes('analysis') || n.includes('statistics')) {
+    return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"; // business graphs
+  }
+  if (n.includes('ai &') || n.includes('machine learning') || n.includes('artificial intelligence') || n.includes('deep learning')) {
+    return "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80"; // neural connections
+  }
+  if (n.includes('cissp') || n.includes('security') || n.includes('hack') || n.includes('ethical')) {
+    return "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80"; // security shields
+  }
+  if (n.includes('marketing') || n.includes('seo') || n.includes('adwords')) {
+    return "https://images.unsplash.com/photo-1533750349088-cd871a92f312?auto=format&fit=crop&w=800&q=80"; // digital marketing boards
+  }
+  if (n.includes('pmp') || n.includes('scrummaster') || n.includes('csm') || n.includes('cspo') || n.includes('safe') || n.includes('itil') || n.includes('prince2') || n.includes('agile') || n.includes('scrum') || n.includes('project') || n.includes('portfolio') || n.includes('product owner')) {
+    return "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80"; // whiteboard scrum workshop
+  }
+  
+  // Category Default Fallbacks
+  switch (catId) {
+    case 'cat-1': return "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80"; // agile
+    case 'cat-2': return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"; // data science
+    case 'cat-3': return "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80"; // AI
+    case 'cat-4': return "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80"; // cloud
+    case 'cat-5': return "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=800&q=80"; // DevOps
+    case 'cat-6': return "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80"; // cyber sec
+    case 'cat-7': return "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"; // dev
+    case 'cat-8': return "https://images.unsplash.com/photo-1533750349088-cd871a92f312?auto=format&fit=crop&w=800&q=80"; // digital marketing
+    default: return "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=800&q=80";
+  }
+}
 
 function generateCourseData() {
   return COURSES_TO_GENERATE.map((c, index) => {
     const slug = c.name.toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .replace(/\s+/g, '-');
-    const id = `course-${slug}`;
-    const image = UNSPLASH_IMAGES[index % UNSPLASH_IMAGES.length];
+    
+    // Fall back to slugified ID unless custom ID is explicitly declared
+    const id = c.id || `course-${slug}`;
+    const image = getPremiumImageForCourse(c.name, c.cat);
     const mentor = MENTORS[index % MENTORS.length];
     
-    const isProgram = c.name.includes("Program");
-    const duration = isProgram ? "6 months" : (c.name.includes("Advanced") || c.name.includes("A-") ? "2 months" : "6 weeks");
-    const price = isProgram ? 39999 : (c.name.includes("Advanced") || c.name.includes("PgMP") || c.name.includes("CISSP") ? 29999 : 19999);
+    const isProgram = c.name.includes("Program") || c.name.includes("Bootcamp") || c.name.includes("Master's");
+    const duration = isProgram ? "6 months" : (c.name.includes("Advanced") || c.name.includes("A-") || c.name.includes("RTE") || c.name.includes("CISSP") ? "2 months" : "6 weeks");
+    const price = isProgram ? 39999 : (c.name.includes("Advanced") || c.name.includes("PgMP") || c.name.includes("CISSP") || c.name.includes("LSM") ? 29999 : 19999);
     const rating = parseFloat((4.7 + Math.random() * 0.25).toFixed(1));
     const reviewsCount = Math.floor(120 + Math.random() * 300);
 
@@ -127,7 +177,7 @@ if (fs.existsSync(dbMockPath)) {
   
   // Filter out any courses that overlap with our new generation list (to avoid duplicates)
   const existingNonOverlap = (data.courses || []).filter(c => {
-    return !COURSES_TO_GENERATE.some(gc => gc.name === c.name);
+    return !COURSES_TO_GENERATE.some(gc => (gc.id === c.id || gc.name === c.name));
   });
   
   data.courses = [...existingNonOverlap, ...generatedCourses];
@@ -137,7 +187,7 @@ if (fs.existsSync(dbMockPath)) {
   console.log(`[GENERATOR] db_mock.json not found at ${dbMockPath}`);
 }
 
-// Write the array block to a temporary file so we can view it and copy into db.ts
+// Write the array block to generated_array.json
 const codeFile = path.join(__dirname, 'generated_array.json');
 fs.writeFileSync(codeFile, JSON.stringify(generatedCourses, null, 2), 'utf-8');
 console.log(`[GENERATOR] JSON array written to ${codeFile}`);

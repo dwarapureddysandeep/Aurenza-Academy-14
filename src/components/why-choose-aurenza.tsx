@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Video, Users, GraduationCap, Code, 
-  Briefcase, Building2, Star, Check 
+  Users, Briefcase, Star, Check, BookOpen, 
+  Terminal, Award, Calendar
 } from 'lucide-react';
 
 interface FeatureCard {
@@ -78,34 +78,34 @@ export default function WhyChooseAurenza() {
 
   const features: FeatureCard[] = [
     {
-      icon: <Video className="w-7 h-7" />,
-      title: "Live Instructor Training",
-      description: "Interactive live sessions led by experienced trainers with real-world industry expertise."
+      icon: <BookOpen className="w-7 h-7" />,
+      title: "Industry-Focused Curriculum",
+      description: "Syllabi designed and updated in collaboration with cloud architects and tech directors to match active job requirements."
     },
     {
-      icon: <Users className="w-7 h-7" />,
-      title: "Industry Experts",
-      description: "Learn from certified professionals actively working in leading organizations."
-    },
-    {
-      icon: <GraduationCap className="w-7 h-7" />,
-      title: "Certification Preparation",
-      description: "Comprehensive exam-focused training designed to maximize certification success rates."
-    },
-    {
-      icon: <Code className="w-7 h-7" />,
-      title: "Hands-On Projects",
-      description: "Gain practical experience through real-world projects, labs, and case studies."
+      icon: <Terminal className="w-7 h-7" />,
+      title: "Real-World Projects",
+      description: "Gain practical exposure by deploying applications to sandbox environments and working on enterprise CI/CD pipelines."
     },
     {
       icon: <Briefcase className="w-7 h-7" />,
-      title: "Career Support",
-      description: "Resume guidance, interview preparation, and career mentoring to help you advance faster."
+      title: "Placement Assistance",
+      description: "Dedicated resume counseling, mock interviews with hiring managers, and direct referral opportunities with 500+ partners."
     },
     {
-      icon: <Building2 className="w-7 h-7" />,
-      title: "Corporate Training",
-      description: "Customized workforce upskilling programs designed for organizations and teams."
+      icon: <Users className="w-7 h-7" />,
+      title: "Expert Mentors",
+      description: "Receive personalized coaching and weekly review sessions led by active ex-FAANG and certified tech specialists."
+    },
+    {
+      icon: <Award className="w-7 h-7" />,
+      title: "Certification Support",
+      description: "Comprehensive exam-focused preparation with simulations, registry mock tests, and official voucher support."
+    },
+    {
+      icon: <Calendar className="w-7 h-7" />,
+      title: "Flexible Learning",
+      description: "Attend interactive live weekend cohorts with lifetime 4K recording access and continuous peer-learning channels."
     }
   ];
 
