@@ -70,7 +70,7 @@ export default function CorporateForm() {
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Elvyn Kumar"
+          placeholder="Elvyn Kumar"
           className="glass-input text-xs py-2.5"
         />
       </div>
@@ -116,7 +116,7 @@ export default function CorporateForm() {
             required
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="e.g. +91 XXX XXX XXXX"
+            placeholder="+91 XXX XXX XXXX"
             className="glass-input text-xs py-2.5"
           />
         </div>

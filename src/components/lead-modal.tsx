@@ -142,7 +142,7 @@ export default function LeadModal() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Elvyn Kumar"
+                  placeholder="Elvyn Kumar"
                   className="glass-input text-xs sm:text-sm"
                 />
               </div>
@@ -156,7 +156,7 @@ export default function LeadModal() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. elvyn@gmail.com"
+                  placeholder="elvyn@gmail.com"
                   className="glass-input text-xs sm:text-sm"
                 />
               </div>
@@ -171,7 +171,7 @@ export default function LeadModal() {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. +91 XXX XXX XXXX"
+                  placeholder="+91 XXX XXX XXXX"
                   className="glass-input text-xs sm:text-sm"
                 />
               </div>
@@ -200,7 +200,7 @@ export default function LeadModal() {
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="e.g. I am a recent graduate looking to build a career in software development and improve my full-stack development skills."
+                  placeholder="I am a recent graduate looking to build a career in software development and improve my full-stack development skills."
                   rows={2}
                   className="glass-input text-xs sm:text-sm resize-none"
                 />
