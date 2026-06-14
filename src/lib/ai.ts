@@ -25,6 +25,29 @@ export interface ResumeAnalysis {
   roadmap60: string[];
   roadmap90: string[];
   fullReport?: string;
+  resumeScore?: {
+    total: number;
+    skills: number;
+    projects: number;
+    experience: number;
+    certifications: number;
+    atsReadiness: number;
+  };
+  atsAnalysis?: {
+    score: number;
+    missingKeywords: string[];
+    weakSections: string[];
+    formattingIssues: string[];
+    suggestions: string[];
+  };
+  confidenceScore?: number;
+  confidenceReason?: string;
+  priorityCourses?: {
+    priority1: string[];
+    priority2: string[];
+    priority3: string[];
+  };
+  learningPathPhase?: string;
 }
 
 export interface ChatResponse {
@@ -258,6 +281,40 @@ ${detectedSkills.map(s => `- ${s}`).join('\n')}
 # Final Verdict
 Highly motivated candidate. Strongly recommended to pursue upskilling certifications at Aurenza Academy to bridge skills gaps and secure premium placement references.`;
 
+  const priority1 = matchedCourses.slice(0, 1);
+  const priority2 = matchedCourses.slice(1, 2);
+  const priority3 = matchedCourses.slice(2);
+
+  const resumeScore = {
+    total: 78,
+    skills: 23,
+    projects: 15,
+    experience: 18,
+    certifications: 12,
+    atsReadiness: 10
+  };
+
+  const atsAnalysis = {
+    score: 82,
+    missingKeywords: skillGaps.slice(0, 3),
+    weakSections: ["Certifications", "Projects"],
+    formattingIssues: ["Missing standard ATS section headers", "Multiple columns in layout"],
+    suggestions: ["Use single-column layout", "Incorporate target job description keywords", "Highlight projects with quantifiably measurable impact statements"]
+  };
+
+  const confidenceScore = counselorProfile ? 98 : 85;
+  const confidenceReason = counselorProfile 
+    ? "Questionnaire completed with explicit experience, education, domain, and tool details." 
+    : "Parsed resume contains education, skills, and tools section blocks.";
+
+  const learningPathPhase = primaryCourseId === 'course-java'
+    ? "Beginner (Core Java) → Intermediate (Spring Boot) → Advanced (React Integration) → Job Ready"
+    : primaryCourseId === 'course-frontend'
+      ? "Beginner (HTML/CSS) → Intermediate (React Hooks) → Advanced (Next.js SSR) → Job Ready"
+      : primaryCourseId === 'course-aiml' || primaryCourseId === 'course-dsai'
+        ? "Beginner (Python/Math) → Intermediate (PyTorch/CV) → Advanced (NLP/MLOps) → Job Ready"
+        : "Beginner (Cloud Basics) → Intermediate (VPC/IAM) → Advanced (Terraform/CI-CD) → Job Ready";
+
   return {
     name,
     education,
@@ -275,7 +332,17 @@ Highly motivated candidate. Strongly recommended to pursue upskilling certificat
     roadmap60,
     roadmap90,
     improvementSuggestion: 'We suggest building 2 advanced open-source projects on GitHub, learning modern authentication models, and working extensively on quantitative aptitude skills to pass assessment checks.',
-    fullReport
+    fullReport,
+    resumeScore,
+    atsAnalysis,
+    confidenceScore,
+    confidenceReason,
+    priorityCourses: {
+      priority1,
+      priority2,
+      priority3
+    },
+    learningPathPhase
   };
 }
 
@@ -588,19 +655,23 @@ ${textToAnalyze}`;
               {
                 role: 'user',
                 parts: [{
-                  text: `You are an advanced AI Career Analyst and Resume Diagnostics Assistant for Aurenza Academy.
+                  text: `You are a Senior AI Career Consultant and Resume Diagnostics Assistant for Aurenza Academy.
                   
                   Primary responsibilities:
                   1. Profile/Resume Analysis (extract education, certifications, projects, tools, skills).
-                  2. Skill Gap Analysis (identify missing/weak skills compared to standard industry expectations).
-                  3. Job Matching & Career Guidance (course recommendations, expected outcomes).
-                  4. Learning Roadmap Milestones (detailed steps for Month 1 / 30-Day, Month 2 / 60-Day, and Month 3 / 90-Day roadmaps).
-                  
+                  2. Resume Score (compute overall score out of 100, and category breakdowns).
+                  3. ATS Compatibility Analysis (compute ATS score, identify missing keywords, weak sections, formatting issues, and suggestions).
+                  4. Confidence Score (determine confidence level in analysis based on input completeness).
+                  5. Course Priority Ranking (recommend courses grouped by priority: must learn, recommended, optional).
+                  6. Learning Path Phase Progression (Beginner → Intermediate → Advanced → Job Ready).
+                  7. Explanations (explain why skills are missing, why courses are recommended, expected salary ranges, and potential job roles).
+
                   Rules:
-                  - Recommend ONLY courses from our ID list: "course-java", "course-frontend", "course-aiml", "course-aws", "course-azure", "course-devops", "course-microsoft-power-bi", "course-dsai", "course-csm", "course-pmp".
-                  - For each recommended course, explain WHY it is recommended, which skill gaps it covers, and the career outcome.
-                  - Provide clear steps for the 30-Day, 60-Day, and 90-Day Roadmap milestones.
-                  
+                  - Recommend ONLY courses from our official ID list: "course-java", "course-frontend", "course-aiml", "course-aws", "course-azure", "course-devops", "course-microsoft-power-bi", "course-dsai", "course-csm", "course-pmp".
+                  - Never hallucinate course names or recommend unavailable courses.
+                  - For each recommended course, explicitly justify the match, state expected salary ranges (e.g., INR 6-12 LPA), and target job roles (e.g., Cloud Architect).
+                  - Be supportive, expert, and professional.
+
                   Analyze the input and provide a JSON response matching exactly this format:
                   {
                     "name": "Candidate Name (use provided or extract)",
@@ -618,6 +689,29 @@ ${textToAnalyze}`;
                     "roadmap30": ["Step1", "Step2"],
                     "roadmap60": ["Step3", "Step4"],
                     "roadmap90": ["Step5", "Step6"],
+                    "resumeScore": {
+                      "total": 78,
+                      "skills": 25,
+                      "projects": 15,
+                      "experience": 18,
+                      "certifications": 10,
+                      "atsReadiness": 10
+                    },
+                    "atsAnalysis": {
+                      "score": 80,
+                      "missingKeywords": ["keyword1", "keyword2"],
+                      "weakSections": ["section1"],
+                      "formattingIssues": ["issue1"],
+                      "suggestions": ["suggestion1"]
+                    },
+                    "confidenceScore": 92,
+                    "confidenceReason": "Short reasoning detail",
+                    "priorityCourses": {
+                      "priority1": ["course-java"],
+                      "priority2": ["course-devops"],
+                      "priority3": ["course-aws"]
+                    },
+                    "learningPathPhase": "Beginner → Intermediate → Advanced → Job Ready",
                     "fullReport": "A detailed report in markdown formatting following EXACTLY this structure:\n\n# Candidate Summary\n\n# Resume Score\n\nOverall Score: XX/100\n\n# Skills Identified\n\n# Strengths\n\n# Weaknesses\n\n# ATS Analysis\n\n# Job Match Recommendations\n\n# Skill Gap Analysis\n\n# Recommended Certifications\n\n# Recommended Learning Path\n\n# Interview Questions\n\n# Final Verdict"
                   }
                   

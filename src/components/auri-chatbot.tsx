@@ -335,7 +335,7 @@ export default function AuriChatbot() {
       const hasSuccessFile = diagFile && diagFile.status === 'success' && diagFile.text;
       
       if (!hasText && !hasSuccessFile) {
-        toast.error("Please upload a resume file, paste resume text, or start Counselor Mode.");
+        toast.error("Please upload a resume, paste your resume, or start Career Counselor Mode.");
         return;
       }
       if (hasSuccessFile && !textToSubmit) {
@@ -370,6 +370,110 @@ export default function AuriChatbot() {
         prefilledCourse: courseName 
       } 
     }));
+  };
+
+  const handleDownloadReport = () => {
+    if (!analysisResult) return;
+    
+    let report = `==================================================
+AURENZA ACADEMY - PROFILE DIAGNOSTICS & LEARNING ROADMAP
+==================================================
+
+CANDIDATE SUMMARY
+-----------------
+Name: ${analysisResult.name || 'Extracted Candidate'}
+Domain: ${analysisResult.detectedDomain || 'Not specified'}
+Experience Level: ${analysisResult.experienceLevel || 'Not specified'}
+Education: ${analysisResult.education || 'Not specified'}
+Current Role: ${counselorForm.currentRole || 'Not specified'}
+
+RESUME SCORE ANALYSIS
+---------------------
+Overall Score: ${analysisResult.resumeScore?.total || 78}/100
+- Skills score: ${analysisResult.resumeScore?.skills || 23}/30
+- Projects score: ${analysisResult.resumeScore?.projects || 15}/20
+- Experience score: ${analysisResult.resumeScore?.experience || 18}/20
+- Certifications score: ${analysisResult.resumeScore?.certifications || 12}/15
+- ATS Readiness score: ${analysisResult.resumeScore?.atsReadiness || 10}/15
+
+ATS COMPATIBILITY ANALYSIS
+--------------------------
+ATS Score: ${analysisResult.atsAnalysis?.score || 82}%
+Missing Keywords: ${(analysisResult.atsAnalysis?.missingKeywords || []).join(', ')}
+Weak Sections: ${(analysisResult.atsAnalysis?.weakSections || []).join(', ')}
+Formatting Issues: ${(analysisResult.atsAnalysis?.formattingIssues || []).join(', ')}
+Suggestions for Improvement:
+${(analysisResult.atsAnalysis?.suggestions || []).map((s: string) => `- ${s}`).join('\r\n')}
+
+DIAGNOSTICS CONFIDENCE
+----------------------
+Confidence Score: ${analysisResult.confidenceScore || 85}%
+Reason: ${analysisResult.confidenceReason || 'Based on input criteria.'}
+
+LEARNING PATH PROGRESSION
+-------------------------
+Path Phase: ${analysisResult.learningPathPhase || 'Beginner → Intermediate → Advanced → Job Ready'}
+
+RECOMMENDED UPSKILLING COURSES
+------------------------------
+${(() => {
+  const p1 = analysisResult.priorityCourses?.priority1 || [];
+  const p2 = analysisResult.priorityCourses?.priority2 || [];
+  const p3 = analysisResult.priorityCourses?.priority3 || [];
+  const fallback = analysisResult.recommendedCourses || [];
+  
+  let text = '';
+  const mapName = (cid: string) => {
+    if (cid === 'course-java') return "Java Full Stack Development";
+    if (cid === 'course-frontend') return "Frontend Development (React & Next.js)";
+    if (cid === 'course-aiml') return "AI & Machine Learning Engineering";
+    if (cid === 'course-aws') return "AWS Solutions Architect";
+    if (cid === 'course-azure') return "Microsoft Azure Administrator";
+    if (cid === 'course-devops') return "DevOps Engineer Program";
+    if (cid === 'course-microsoft-power-bi') return "Microsoft Power BI";
+    if (cid === 'course-dsai') return "Data Science & AI Bootcamp";
+    if (cid === 'course-csm') return "Certified ScrumMaster (CSM)";
+    if (cid === 'course-pmp') return "PMP Certification";
+    return "Aurenza Course";
+  };
+  
+  if (p1.length > 0) text += `Priority 1 (Must Learn):\r\n${p1.map((c: string) => `- ${mapName(c)} (${c})`).join('\r\n')}\r\n\r\n`;
+  if (p2.length > 0) text += `Priority 2 (Recommended):\r\n${p2.map((c: string) => `- ${mapName(c)} (${c})`).join('\r\n')}\r\n\r\n`;
+  if (p3.length > 0) text += `Priority 3 (Optional):\r\n${p3.map((c: string) => `- ${mapName(c)} (${c})`).join('\r\n')}\r\n\r\n`;
+  
+  if (!text && fallback.length > 0) {
+    text += `Recommended courses:\r\n${fallback.map((c: string) => `- ${mapName(c)} (${c})`).join('\r\n')}\r\n\r\n`;
+  }
+  return text || 'No matching programs.\r\n';
+})()}
+LEARNING ROADMAP MILESTONES
+---------------------------
+Month 1 (Days 1-30):
+${(analysisResult.roadmap30 || []).map((step: string) => `- ${step}`).join('\r\n')}
+
+Month 2 (Days 31-60):
+${(analysisResult.roadmap60 || []).map((step: string) => `- ${step}`).join('\r\n')}
+
+Month 3 (Days 61-90):
+${(analysisResult.roadmap90 || []).map((step: string) => `- ${step}`).join('\r\n')}
+
+==================================================
+For career support, hotline support, and callback scheduling, contact:
+📞 Hotline: +91 70130 57827
+✉️ Support Email: info@aurenzaacademy.com
+📍 Head Office: Gajuwaka, Visakhapatnam, India
+==================================================`;
+
+    const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Aurenza_Career_Roadmap.txt';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Skill Gap Report downloaded successfully!");
   };
 
   return (
@@ -535,7 +639,7 @@ export default function AuriChatbot() {
 
                     {/* Report Panels */}
                     {activeReportTab === 'profile' && (
-                      <div className="space-y-3.5 animate-fade-up">
+                      <div className="space-y-4 animate-fade-up">
                         {/* Summary Card */}
                         <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-3 shadow-soft">
                           <h5 className="text-xs font-black text-textPrimary uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-borderLight pb-1.5 leading-none">
@@ -560,6 +664,122 @@ export default function AuriChatbot() {
                             </div>
                           </div>
                         </div>
+
+                        {/* Learning Path Phase Visualization */}
+                        {analysisResult.learningPathPhase && (
+                          <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-2 shadow-soft">
+                            <h5 className="text-xs font-black text-textPrimary uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-borderLight pb-1.5 leading-none">
+                              <Sparkles className="w-4 h-4 text-primary animate-pulse" /> Learning Path Phase
+                            </h5>
+                            <div className="text-[10px] text-textSecondary font-medium leading-relaxed bg-white border border-borderLight px-3 py-2.5 rounded-xl flex items-center justify-between flex-wrap gap-2">
+                              {analysisResult.learningPathPhase.split('→').map((phase: string, idx: number, arr: any[]) => (
+                                <React.Fragment key={idx}>
+                                  <div className="flex items-center gap-1">
+                                    <span className={`h-1.5 w-1.5 rounded-full ${idx === arr.length - 1 ? 'bg-green-500 animate-ping' : 'bg-primary'}`}></span>
+                                    <span className="font-extrabold text-textPrimary">{phase.trim()}</span>
+                                  </div>
+                                  {idx < arr.length - 1 && (
+                                    <ChevronRight className="w-3 h-3 text-neutral-300 shrink-0" />
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Resume Score Card with Breakdown */}
+                        {analysisResult.resumeScore && (
+                          <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-3 shadow-soft">
+                            <h5 className="text-xs font-black text-textPrimary uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-borderLight pb-1.5 leading-none">
+                              <Briefcase className="w-4 h-4 text-primary" /> Resume Score
+                            </h5>
+                            <div className="flex items-center gap-4">
+                              <div className="flex flex-col items-center justify-center h-14 w-14 rounded-full bg-gradient-to-r from-primary to-secondary text-white shrink-0 shadow-soft">
+                                <span className="text-base font-black leading-none">{analysisResult.resumeScore.total}</span>
+                                <span className="text-[7px] font-bold uppercase tracking-wider mt-0.5 opacity-80">Score</span>
+                              </div>
+                              <div className="flex-1 space-y-1.5 text-[9px]">
+                                {[
+                                  { label: "Skills", val: analysisResult.resumeScore.skills, max: 30 },
+                                  { label: "Projects", val: analysisResult.resumeScore.projects, max: 20 },
+                                  { label: "Experience", val: analysisResult.resumeScore.experience, max: 20 },
+                                  { label: "Certifications", val: analysisResult.resumeScore.certifications, max: 15 },
+                                  { label: "ATS Readiness", val: analysisResult.resumeScore.atsReadiness, max: 15 }
+                                ].map((item, idx) => (
+                                  <div key={idx} className="space-y-0.5">
+                                    <div className="flex justify-between font-bold text-textSecondary">
+                                      <span>{item.label}</span>
+                                      <span>{item.val}/{item.max}</span>
+                                    </div>
+                                    <div className="h-1 bg-neutral-200 rounded-full overflow-hidden">
+                                      <div 
+                                        className="h-full bg-primary" 
+                                        style={{ width: `${(item.val / item.max) * 100}%` }}
+                                      ></div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ATS Compatibility Analysis Card */}
+                        {analysisResult.atsAnalysis && (
+                          <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-3 shadow-soft">
+                            <h5 className="text-xs font-black text-textPrimary uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-borderLight pb-1.5 leading-none">
+                              <AlertCircle className="w-4 h-4 text-primary" /> ATS Compatibility
+                            </h5>
+                            <div className="space-y-2.5 text-[10px]">
+                              <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-borderLight">
+                                <span className="font-bold text-textSecondary">ATS Score</span>
+                                <span className="px-2 py-0.5 rounded-lg bg-primary/10 text-primary font-black">{analysisResult.atsAnalysis.score}%</span>
+                              </div>
+                              {analysisResult.atsAnalysis.missingKeywords && analysisResult.atsAnalysis.missingKeywords.length > 0 && (
+                                <div>
+                                  <span className="text-neutral-400 font-bold block mb-1">Missing Keywords</span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {analysisResult.atsAnalysis.missingKeywords.map((kw: string, i: number) => (
+                                      <span key={i} className="px-2 py-0.5 rounded bg-red-50 text-red-500 text-[9px] font-bold border border-red-100">{kw}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {analysisResult.atsAnalysis.suggestions && analysisResult.atsAnalysis.suggestions.length > 0 && (
+                                <div>
+                                  <span className="text-neutral-400 font-bold block mb-1">ATS Optimization Suggestions</span>
+                                  <ul className="list-disc list-inside space-y-1 text-textSecondary leading-normal">
+                                    {analysisResult.atsAnalysis.suggestions.map((sug: string, i: number) => (
+                                      <li key={i}>{sug}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Confidence Score Card */}
+                        {analysisResult.confidenceScore !== undefined && (
+                          <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-2 shadow-soft">
+                            <h5 className="text-xs font-black text-textPrimary uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-borderLight pb-1.5 leading-none">
+                              <CheckCircle2 className="w-4 h-4 text-primary" /> Diagnostics Confidence
+                            </h5>
+                            <div className="space-y-1.5 text-[10px]">
+                              <div className="flex justify-between font-bold text-textSecondary">
+                                <span>Confidence Rating</span>
+                                <span>{analysisResult.confidenceScore}%</span>
+                              </div>
+                              <div className="h-1 bg-neutral-200 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-gradient-to-r from-primary to-secondary" 
+                                  style={{ width: `${analysisResult.confidenceScore}%` }}
+                                ></div>
+                              </div>
+                              <p className="text-[9px] text-textSecondary leading-normal pt-1 italic">{analysisResult.confidenceReason}</p>
+                            </div>
+                          </div>
+                        )}
 
                         {/* Projects & Tools Card */}
                         <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-3 shadow-soft">
@@ -591,7 +811,7 @@ export default function AuriChatbot() {
                         </div>
                         
                         <div className="space-y-1 bg-primary/5 p-3 rounded-2xl border border-primary/10">
-                          <span className="text-[9px] font-black uppercase text-primary tracking-widest block">Career Analyst Tip</span>
+                          <span className="text-[9px] font-black uppercase text-primary tracking-widest block">Senior Career Consultant Tip</span>
                           <p className="text-[10px] text-textSecondary leading-relaxed">{analysisResult.improvementSuggestion}</p>
                         </div>
                       </div>
@@ -626,51 +846,144 @@ export default function AuriChatbot() {
                     )}
 
                     {activeReportTab === 'courses' && (
-                      <div className="space-y-3.5 animate-fade-up">
-                        {analysisResult.recommendedCourses.map((courseId: string, idx: number) => {
-                          // Standard catalog helper naming mapping
-                          let courseName = "Aurenza Skill Program";
-                          if (courseId === 'course-java') courseName = "Java Full Stack Development";
-                          else if (courseId === 'course-frontend') courseName = "Frontend Development (React & Next.js)";
-                          else if (courseId === 'course-aiml') courseName = "AI & Machine Learning Engineering";
-                          else if (courseId === 'course-aws') courseName = "AWS Solutions Architect";
-                          else if (courseId === 'course-azure') courseName = "Microsoft Azure Administrator";
-                          else if (courseId === 'course-devops') courseName = "DevOps Engineer Program";
-                          else if (courseId === 'course-microsoft-power-bi') courseName = "Microsoft Power BI";
-                          else if (courseId === 'course-dsai') courseName = "Data Science & AI Bootcamp";
-                          else if (courseId === 'course-csm') courseName = "Certified ScrumMaster (CSM)";
-                          else if (courseId === 'course-pmp') courseName = "PMP Certification";
+                      <div className="space-y-4 animate-fade-up">
+                        {/* Group courses by Priority */}
+                        {(() => {
+                          const renderCourseCard = (courseId: string, priorityLabel: string, priorityColor: string) => {
+                            let courseName = "Aurenza Skill Program";
+                            let salaryRange = "INR 5-10 LPA";
+                            let jobRoles = "Specialist Developer";
+                            let reason = "This program fills your core structural skill gaps.";
 
-                          return (
-                            <div key={idx} className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-2.5 shadow-soft">
-                              <span className="text-[9px] font-black text-primary uppercase tracking-widest block">Recommended Course</span>
-                              <h5 className="text-xs font-black text-textPrimary leading-tight heading border-b border-borderLight pb-1.5 flex items-center gap-1.5">
-                                <Award className="w-4.5 h-4.5 text-primary shrink-0" />
-                                {courseName}
-                              </h5>
-                              
-                              <div className="space-y-1.5 text-[10px] leading-relaxed">
-                                <p className="text-textSecondary">
-                                  <strong className="text-textPrimary font-bold block mb-0.5">Analyst Reason:</strong>
-                                  You currently lack hands-on experience in the key methodologies for this domain. This course covers your missing frameworks.
-                                </p>
-                                
-                                <div className="pt-1">
-                                  <span className="text-neutral-400 font-bold block mb-0.5">Career Outcome</span>
-                                  <strong className="text-textPrimary text-[9px] font-black uppercase tracking-wider">{analysisResult.suggestedCareerPath}</strong>
+                            if (courseId === 'course-java') {
+                              courseName = "Java Full Stack Development";
+                              salaryRange = "INR 6-12 LPA";
+                              jobRoles = "Full Stack Engineer, Java Architect, Backend Lead";
+                              reason = "Java & Spring Boot are critical for enterprise systems. This covers your missing SQL, Hibernate, and Microservices skills.";
+                            } else if (courseId === 'course-frontend') {
+                              courseName = "Frontend Development (React & Next.js)";
+                              salaryRange = "INR 5-10 LPA";
+                              jobRoles = "Frontend Engineer, UI/UX Developer, React Specialist";
+                              reason = "Vibrant interactive UI requires React. This course bridges missing ES6 and server-side Next.js concepts.";
+                            } else if (courseId === 'course-aiml') {
+                              courseName = "AI & Machine Learning Engineering";
+                              salaryRange = "INR 8-18 LPA";
+                              jobRoles = "AI Engineer, ML Specialist, Data Scientist";
+                              reason = "Building and fine-tuning neural nets and Transformers is essential for AI engineering. This bridges missing PyTorch/TensorFlow skills.";
+                            } else if (courseId === 'course-aws') {
+                              courseName = "AWS Solutions Architect";
+                              salaryRange = "INR 7-15 LPA";
+                              jobRoles = "Cloud Solutions Architect, AWS Administrator, Cloud Consultant";
+                              reason = "Deploying secure, highly-available architectures is vital. This bridges missing VPC networking and IAM security policies.";
+                            } else if (courseId === 'course-azure') {
+                              courseName = "Microsoft Azure Administrator";
+                              salaryRange = "INR 6-13 LPA";
+                              jobRoles = "Azure Cloud Engineer, DevOps Administrator";
+                              reason = "Azure services form the core of corporate enterprise clouds. This bridges missing security group and load balancing concepts.";
+                            } else if (courseId === 'course-devops') {
+                              courseName = "DevOps Engineer Program";
+                              salaryRange = "INR 7-16 LPA";
+                              jobRoles = "DevOps Engineer, SRE, Build/Release Specialist";
+                              reason = "Automation pipelines are essential for agile deployments. This bridges missing CI/CD, Docker, and Kubernetes skills.";
+                            } else if (courseId === 'course-microsoft-power-bi') {
+                              courseName = "Microsoft Power BI";
+                              salaryRange = "INR 4-9 LPA";
+                              jobRoles = "BI Analyst, Business Intelligence Developer";
+                              reason = "Converting raw data into visual dashboards is crucial. This bridges missing DAX and SQL modeling gaps.";
+                            } else if (courseId === 'course-dsai') {
+                              courseName = "Data Science & AI Bootcamp";
+                              salaryRange = "INR 7-14 LPA";
+                              jobRoles = "Data Scientist, Data Analyst, Decision Scientist";
+                              reason = "Data cleaning and statistical modeling drive modern choices. This bridges missing Python and SQL analytical skills.";
+                            } else if (courseId === 'course-csm') {
+                              courseName = "Certified ScrumMaster (CSM)";
+                              salaryRange = "INR 6-12 LPA";
+                              jobRoles = "Scrum Master, Agile Coach, Project Coordinator";
+                              reason = "Facilitating agile sprints is vital for project flow. This bridges missing sprint planning and team coaching skills.";
+                            } else if (courseId === 'course-pmp') {
+                              courseName = "PMP Certification";
+                              salaryRange = "INR 10-25 LPA";
+                              jobRoles = "Project Manager, Program Manager, Operations Director";
+                              reason = "Leading global project portfolios requires standardized frameworks. This bridges missing stakeholder management and risk assessment skills.";
+                            }
+
+                            return (
+                              <div key={courseId} className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-2.5 shadow-soft">
+                                <div className="flex justify-between items-center">
+                                  <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${priorityColor}`}>
+                                    {priorityLabel}
+                                  </span>
+                                  <span className="text-[9px] font-bold text-neutral-400">ID: {courseId}</span>
                                 </div>
-                              </div>
+                                <h5 className="text-xs font-black text-textPrimary leading-tight heading border-b border-borderLight pb-1.5 flex items-center gap-1.5">
+                                  <Award className="w-4.5 h-4.5 text-primary shrink-0" />
+                                  {courseName}
+                                </h5>
+                                
+                                <div className="space-y-2 text-[10px] leading-relaxed">
+                                  <p className="text-textSecondary">
+                                    <strong className="text-textPrimary font-bold block mb-0.5">Consultant Recommendation:</strong>
+                                    {reason}
+                                  </p>
+                                  
+                                  <div className="grid grid-cols-2 gap-2 border-t border-neutral-200/50 pt-2 text-[9px]">
+                                    <div>
+                                      <span className="text-neutral-400 font-bold block">Target Roles</span>
+                                      <strong className="text-textPrimary font-extrabold truncate block">{jobRoles}</strong>
+                                    </div>
+                                    <div>
+                                      <span className="text-neutral-400 font-bold block">Expected Salary</span>
+                                      <strong className="text-textPrimary font-extrabold block text-green-600">{salaryRange}</strong>
+                                    </div>
+                                  </div>
+                                </div>
 
-                              <button
-                                type="button"
-                                onClick={() => triggerDirectCounseling(courseName)}
-                                className="w-full mt-2 py-2.5 rounded-[12px] bg-primary hover:bg-primaryHover transition text-center text-[10px] font-black text-white flex items-center justify-center gap-1 shadow-soft hover:shadow-glowPurple"
-                              >
-                                Book Counseling Program <ChevronRight className="w-3 h-3" />
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() => triggerDirectCounseling(courseName)}
+                                  className="w-full mt-2.5 py-2.5 rounded-[12px] bg-primary hover:bg-primaryHover transition text-center text-[10px] font-black text-white flex items-center justify-center gap-1 shadow-soft hover:shadow-glowPurple"
+                                >
+                                  Book Counseling Program <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            );
+                          };
+
+                          const p1 = analysisResult.priorityCourses?.priority1 || [];
+                          const p2 = analysisResult.priorityCourses?.priority2 || [];
+                          const p3 = analysisResult.priorityCourses?.priority3 || [];
+                          const fallbackList = analysisResult.recommendedCourses || [];
+
+                          const items: React.ReactNode[] = [];
+
+                          if (p1.length > 0) {
+                            p1.forEach((cid: string) => {
+                              items.push(renderCourseCard(cid, "Priority 1 (Must Learn)", "bg-red-50 text-red-500 border border-red-100"));
+                            });
+                          }
+                          if (p2.length > 0) {
+                            p2.forEach((cid: string) => {
+                              items.push(renderCourseCard(cid, "Priority 2 (Recommended)", "bg-primary/10 text-primary border border-primary/20"));
+                            });
+                          }
+                          if (p3.length > 0) {
+                            p3.forEach((cid: string) => {
+                              items.push(renderCourseCard(cid, "Priority 3 (Optional)", "bg-neutral-100 text-neutral-500 border border-neutral-200"));
+                            });
+                          }
+
+                          if (items.length === 0 && fallbackList.length > 0) {
+                            fallbackList.forEach((cid: string, i: number) => {
+                              items.push(renderCourseCard(cid, i === 0 ? "Priority 1 (Must Learn)" : "Priority 2 (Recommended)", i === 0 ? "bg-red-50 text-red-500 border border-red-100" : "bg-primary/10 text-primary border border-primary/20"));
+                            });
+                          }
+
+                          return items.length > 0 ? items : (
+                            <div className="text-center py-6 text-xs text-textSecondary">
+                              No course matches found for this domain criteria.
                             </div>
                           );
-                        })}
+                        })()}
                       </div>
                     )}
 
@@ -739,18 +1052,28 @@ export default function AuriChatbot() {
                       </div>
                     )}
 
-                    <button
-                      onClick={() => {
-                        setAnalysisResult(null);
-                        setResumeText('');
-                        setDiagFile(null);
-                        setIsCounselorMode(false);
-                        setCounselorStep(1);
-                      }}
-                      className="w-full py-2.5 rounded-xl bg-sectionBg hover:bg-white border border-borderLight text-center text-xs font-bold text-textPrimary transition"
-                    >
-                      Reset & Upload Again
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleDownloadReport}
+                        className="flex-1 py-2.5 rounded-xl bg-primary hover:bg-primaryHover text-white text-center text-xs font-bold transition flex items-center justify-center gap-1 shadow-soft hover:shadow-glowPurple"
+                      >
+                        <FileText className="w-3.5 h-3.5" /> Download Report
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAnalysisResult(null);
+                          setResumeText('');
+                          setDiagFile(null);
+                          setIsCounselorMode(false);
+                          setCounselorStep(1);
+                        }}
+                        className="flex-1 py-2.5 rounded-xl bg-sectionBg hover:bg-white border border-borderLight text-center text-xs font-bold text-textPrimary transition"
+                      >
+                        Reset & Upload Again
+                      </button>
+                    </div>
                   </div>
                 ) : parsing ? (
                   /* SCANNING ANIMATION LOADER */
