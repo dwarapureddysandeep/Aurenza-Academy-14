@@ -215,7 +215,7 @@ export default function CorporateTraining() {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Shalini Roy"
+                      placeholder="e.g. Elvyn Kumar"
                       className="w-full px-4.5 py-3 text-xs bg-[#FAFAFC] border border-[#ECECF4] focus:border-[#7A008C]/50 rounded-[12px] placeholder-[#8A8A9A] focus:outline-none focus:ring-1 focus:ring-[#7A008C]/15 transition font-semibold"
                     />
                   </div>
@@ -259,7 +259,7 @@ export default function CorporateTraining() {
                         required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+91 98765 43210"
+                        placeholder="+91 XXX XXX XXXX"
                         className="w-full px-4.5 py-3 text-xs bg-[#FAFAFC] border border-[#ECECF4] focus:border-[#7A008C]/50 rounded-[12px] placeholder-[#8A8A9A] focus:outline-none focus:ring-1 focus:ring-[#7A008C]/15 transition font-semibold"
                       />
                     </div>
