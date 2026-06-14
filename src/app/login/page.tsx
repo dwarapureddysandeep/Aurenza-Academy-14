@@ -122,22 +122,7 @@ export default function LoginPage() {
 
         </form>
 
-        {/* Clean Admin Credentials Display Card */}
-        <div className="mt-8 bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-2 text-xs">
-          <p className="font-extrabold text-primary uppercase tracking-widest flex items-center gap-1.5 leading-none">
-            <ShieldCheck className="w-4 h-4" /> ADMIN LOGIN DETAILS
-          </p>
-          <div className="pt-2 text-xs text-textPrimary border-t border-borderLight/60 mt-2 space-y-2">
-            <div className="flex justify-between items-center gap-2">
-              <span className="text-textSecondary font-bold">Email:</span>
-              <code className="text-primary font-bold select-all bg-white px-2 py-0.5 rounded border border-borderLight font-mono text-[11px]">info@aurenzaacademy.com</code>
-            </div>
-            <div className="flex justify-between items-center gap-2">
-              <span className="text-textSecondary font-bold">Password:</span>
-              <code className="font-bold select-all bg-white px-2 py-0.5 rounded border border-borderLight font-mono text-[11px]">Aurenza@0210</code>
-            </div>
-          </div>
-        </div>
+
 
       </div>
     </div>
