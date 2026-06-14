@@ -142,7 +142,7 @@ export default function LeadModal() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Elvyn Kumar"
+                  placeholder="Elvyn"
                   className="glass-input text-xs sm:text-sm"
                 />
               </div>
