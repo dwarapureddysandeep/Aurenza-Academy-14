@@ -125,6 +125,224 @@ const SUGGESTED_ROADMAPS: Record<string, Roadmap> = {
 };
 
 /**
+ * Resolves the final 45-course catalog by combining DB records and static fallback lists.
+ * Excludes the duplicate/unwanted 'CSM Certification' course.
+ */
+export function getFinalCatalog(allDbCourses: any[] = []): any[] {
+  const CORE_COURSES = [
+    {
+      id: "course-java",
+      name: "Java Full Stack Development",
+      slug: "java-full-stack-development",
+      categoryId: "cat-7",
+      categoryName: "Full Stack Development",
+      level: "Beginner -> Advanced",
+      syllabus: JSON.stringify([
+        { module: "Module 1: Core Java Programming" },
+        { module: "Module 2: Advanced Java & Database" },
+        { module: "Module 3: Enterprise Spring Framework" },
+        { module: "Module 4: Frontend Integration" },
+        { module: "Module 5: Testing, Security & Cloud" }
+      ])
+    },
+    {
+      id: "course-frontend",
+      name: "Frontend Development (React & Next.js)",
+      slug: "frontend-development-react-nextjs",
+      categoryId: "cat-7",
+      categoryName: "Full Stack Development",
+      level: "Beginner",
+      syllabus: JSON.stringify([
+        { module: "Module 1: UI Core & Layouts" },
+        { module: "Module 2: Modern JavaScript (ES6+)" },
+        { module: "Module 3: Deep React Foundations" },
+        { module: "Module 4: Modern Production Next.js" }
+      ])
+    },
+    {
+      id: "course-aiml",
+      name: "AI & Machine Learning Engineering",
+      slug: "ai-machine-learning-engineering",
+      categoryId: "cat-3",
+      categoryName: "AI & Machine Learning",
+      level: "Intermediate",
+      syllabus: JSON.stringify([
+        { module: "Module 1: Mathematical Foundations" },
+        { module: "Module 2: Deep Learning & Neural Networks" },
+        { module: "Module 3: Computer Vision (CV)" },
+        { module: "Module 4: Natural Language Processing (NLP)" }
+      ])
+    }
+  ];
+
+  const catalogCoursesMap = new Map<string, any>();
+  CORE_COURSES.forEach(c => catalogCoursesMap.set(c.id, c));
+
+  try {
+    const generated = require('./generated_array.json');
+    generated.forEach((c: any) => {
+      if (c.name !== 'CSM Certification') {
+        catalogCoursesMap.set(c.id, c);
+      }
+    });
+  } catch (e) {
+    console.warn('Failed to load generated_array.json in AI service', e);
+  }
+
+  if (allDbCourses && allDbCourses.length > 0) {
+    allDbCourses.forEach((c: any) => {
+      if (c.name !== 'CSM Certification') {
+        catalogCoursesMap.set(c.id, c);
+      }
+    });
+  }
+
+  return Array.from(catalogCoursesMap.values());
+}
+
+/**
+ * Local course recommendation scorer and formatter for Counselor Chat.
+ * Evaluates all 45 courses, ranks them, selects best match + 4 alternatives, and writes reasons.
+ */
+export function recommendCoursesLocally(queryText: string, finalCourses: any[]): { text: string; bestMatchName: string } {
+  const query = queryText.toLowerCase();
+  
+  const scored = finalCourses.map(course => {
+    let score = 40; // baseline
+    const name = course.name.toLowerCase();
+    const cat = (course.categoryName || '').toLowerCase();
+    
+    // Check keyword matches in course name
+    const nameWords = name.split(/[\s&,\(\)-]+/).filter((w: string) => w.length > 2);
+    let nameMatches = 0;
+    nameWords.forEach((word: string) => {
+      if (query.includes(word)) nameMatches++;
+    });
+    score += nameMatches * 15;
+    
+    // Check category matches
+    const catWords = cat.split(/[\s&,\(\)-]+/).filter((w: string) => w.length > 2);
+    let catMatches = 0;
+    catWords.forEach((word: string) => {
+      if (query.includes(word)) catMatches++;
+    });
+    score += catMatches * 10;
+    
+    // Domain associations
+    if (query.includes('cloud') || query.includes('aws') || query.includes('azure') || query.includes('amazon') || query.includes('vpc')) {
+      if (cat.includes('cloud') || name.includes('aws') || name.includes('azure')) {
+        score += 30;
+      }
+    }
+    if (query.includes('devops') || query.includes('docker') || query.includes('kubernetes') || query.includes('jenkins') || query.includes('ci/cd') || query.includes('pipeline')) {
+      if (cat.includes('devops') || name.includes('devops') || name.includes('scrum') || name.includes('agile')) {
+        score += 30;
+      }
+    }
+    if (query.includes('java') || query.includes('spring') || query.includes('backend') || query.includes('microservice') || query.includes('hibernate')) {
+      if (name.includes('java') || cat.includes('full stack') || name.includes('scrum developer')) {
+        score += 30;
+      }
+    }
+    if (query.includes('frontend') || query.includes('react') || query.includes('next') || query.includes('web') || query.includes('html') || query.includes('css') || query.includes('javascript') || query.includes('ui')) {
+      if (name.includes('frontend') || name.includes('react') || cat.includes('full stack')) {
+        score += 30;
+      }
+    }
+    if (query.includes('data') || query.includes('power bi') || query.includes('analytics') || query.includes('bi') || query.includes('excel') || query.includes('sql') || query.includes('science')) {
+      if (cat.includes('data') || name.includes('power bi') || name.includes('data science') || name.includes('azure data')) {
+        score += 30;
+      }
+    }
+    if (query.includes('security') || query.includes('cyber') || query.includes('cissp') || query.includes('network')) {
+      if (cat.includes('security') || name.includes('cissp') || name.includes('azure administrator')) {
+        score += 30;
+      }
+    }
+    if (query.includes('project') || query.includes('pmp') || query.includes('capm') || query.includes('pgmp') || query.includes('manager') || query.includes('management') || query.includes('scrum') || query.includes('agile') || query.includes('safe') || query.includes('csm')) {
+      if (cat.includes('project') || cat.includes('agile') || cat.includes('safe') || name.includes('pmp') || name.includes('capm') || name.includes('pgmp') || name.includes('scrum') || name.includes('agile') || name.includes('safe')) {
+        score += 25;
+      }
+    }
+    
+    const suitabilityScore = Math.min(Math.max(score, 45), 98);
+    
+    return {
+      course,
+      suitabilityScore
+    };
+  });
+  
+  scored.sort((a, b) => b.suitabilityScore - a.suitabilityScore);
+  
+  const best = scored[0];
+  const alternatives = scored.slice(1, 5);
+  
+  let whyRecommended = [
+    "Strong alignment with career goals and target domain",
+    "Covers missing technical skills required in industry roles",
+    "High market demand with excellent package scaling potential"
+  ];
+  
+  const bestCat = (best.course.categoryName || '').toLowerCase();
+  const bestName = best.course.name.toLowerCase();
+  if (bestCat.includes('cloud') || bestName.includes('aws') || bestName.includes('azure')) {
+    whyRecommended = [
+      "Strong alignment with cloud engineering career goals",
+      "Bridges critical gaps in cloud networking, container orchestration, and IAM security",
+      "High market demand with companies migrating systems to cloud infrastructure"
+    ];
+  } else if (bestCat.includes('devops') || bestName.includes('devops')) {
+    whyRecommended = [
+      "Strong alignment with DevOps and systems automation career goals",
+      "Covers missing skills in CI/CD pipeline building, containerization, and IaC tools",
+      "Excellent career progression and compensation paths in automated deployments"
+    ];
+  } else if (bestName.includes('java') || bestCat.includes('full stack') || bestName.includes('frontend') || bestName.includes('react')) {
+    whyRecommended = [
+      "High relevance for full-stack software development roles",
+      "Bridges gaps in design architectures, backend services, and front-end integration",
+      "High employment demand across enterprise applications and modern tech companies"
+    ];
+  } else if (bestCat.includes('data') || bestName.includes('power bi') || bestName.includes('data science')) {
+    whyRecommended = [
+      "Direct alignment with business intelligence and data science career paths",
+      "Covers analytical querying, statistics modeling, and executive report building",
+      "Essential role in modern data-driven corporate decision-making structures"
+    ];
+  } else if (bestCat.includes('security') || bestName.includes('cissp') || bestName.includes('cyber')) {
+    whyRecommended = [
+      "Strong alignment with cybersecurity and corporate compliance goals",
+      "Bridges gaps in threat intelligence, access control, and network vulnerability auditing",
+      "Critical business requirement with high job security and specialist premium salaries"
+    ];
+  } else if (bestCat.includes('project') || bestCat.includes('agile') || bestCat.includes('safe') || bestName.includes('pmp') || bestName.includes('scrum') || bestName.includes('safe')) {
+    whyRecommended = [
+      "Strong alignment with management, Scrum Master, or Agile consulting paths",
+      "Validates understanding of delivery frameworks, budget planning, and team coaching",
+      "Highly respected industry credentials that scale professional management authority"
+    ];
+  }
+  
+  const textOutput = `Best Match:
+${best.course.name}
+Match Score: ${best.suitabilityScore}%
+
+Why Recommended:
+* ${whyRecommended[0]}
+* ${whyRecommended[1]}
+* ${whyRecommended[2]}
+
+Alternative Courses:
+${alternatives.map(alt => `* ${alt.course.name}`).join('\n')}`;
+
+  return {
+    text: textOutput,
+    bestMatchName: best.course.name
+  };
+}
+
+/**
  * Perform keyword-based local skill & gap scanner or counselor profile mapping
  */
 function scanLocalResume(text: string, counselorProfile: any = null, allCourses: any[] = []): ResumeAnalysis {
@@ -227,62 +445,7 @@ function scanLocalResume(text: string, counselorProfile: any = null, allCourses:
     suggestedCareerPath = `${detectedDomain} Specialist`;
   }
 
-  // Define fallback catalog if allCourses is empty
-  const CORE_COURSES = [
-    {
-      id: "course-java",
-      name: "Java Full Stack Development",
-      slug: "java-full-stack-development",
-      categoryId: "cat-7",
-      categoryName: "Full Stack Development",
-      level: "Beginner -> Advanced",
-      syllabus: JSON.stringify([
-        { module: "Module 1: Core Java Programming" },
-        { module: "Module 2: Advanced Java & Database" },
-        { module: "Module 3: Enterprise Spring Framework" },
-        { module: "Module 4: Frontend Integration" },
-        { module: "Module 5: Testing, Security & Cloud" }
-      ])
-    },
-    {
-      id: "course-frontend",
-      name: "Frontend Development (React & Next.js)",
-      slug: "frontend-development-react-nextjs",
-      categoryId: "cat-7",
-      categoryName: "Full Stack Development",
-      level: "Beginner",
-      syllabus: JSON.stringify([
-        { module: "Module 1: UI Core & Layouts" },
-        { module: "Module 2: Modern JavaScript (ES6+)" },
-        { module: "Module 3: Deep React Foundations" },
-        { module: "Module 4: Modern Production Next.js" }
-      ])
-    },
-    {
-      id: "course-aiml",
-      name: "AI & Machine Learning Engineering",
-      slug: "ai-machine-learning-engineering",
-      categoryId: "cat-3",
-      categoryName: "AI & Machine Learning",
-      level: "Intermediate",
-      syllabus: JSON.stringify([
-        { module: "Module 1: Mathematical Foundations" },
-        { module: "Module 2: Deep Learning & Neural Networks" },
-        { module: "Module 3: Computer Vision (CV)" },
-        { module: "Module 4: Natural Language Processing (NLP)" }
-      ])
-    }
-  ];
-
-  let GENERATED_COURSES: any[] = [];
-  try {
-    GENERATED_COURSES = require('./generated_array.json');
-  } catch (err) {
-    console.warn('Could not read generated_array.json in scanLocalResume', err);
-  }
-
-  const fallbackCourses = [...CORE_COURSES, ...GENERATED_COURSES];
-  const coursesToUse = allCourses && allCourses.length > 0 ? allCourses : fallbackCourses;
+  const coursesToUse = getFinalCatalog(allCourses);
 
   // Calculate suitability score for every catalog course
   const scoredCourses = coursesToUse.map((course: any) => {
@@ -571,6 +734,15 @@ export const aiService = {
   ): Promise<ChatResponse> => {
     const msg = messageText.toLowerCase();
 
+    // Fetch courses from DB catalog and merge with static catalog courses
+    let allCourses: any[] = [];
+    try {
+      allCourses = await db.course.findMany();
+    } catch (dbErr) {
+      console.warn('Failed to query courses in getChatResponse', dbErr);
+    }
+    const finalCourses = getFinalCatalog(allCourses);
+
     // 1. Quick Keyword Handler (Offline/Online immediate responses)
     if (msg.includes('resume') || msg.includes('cv') || msg.includes('upload') || msg.includes('parse')) {
       return {
@@ -580,10 +752,21 @@ export const aiService = {
     }
 
     if (msg.includes('counseling') || msg.includes('career') || msg.includes('suit') || msg.includes('recommend')) {
-      return {
-        text: "Let's discover your perfect path! Tell me: What is your current career status? Are you a college student or a working professional?",
-        quickActions: ['Student', 'Working Professional']
-      };
+      const isRecomm = msg.includes('recommend') || msg.includes('suit') || msg.includes('course');
+      if (isRecomm) {
+        if (!GEMINI_API_KEY) {
+          const localRec = recommendCoursesLocally(messageText, finalCourses);
+          return {
+            text: localRec.text,
+            quickActions: ['Book Free Counseling', 'Explore Courses']
+          };
+        }
+      } else {
+        return {
+          text: "Let's discover your perfect path! Tell me: What is your current career status? Are you a college student or a working professional?",
+          quickActions: ['Student', 'Working Professional']
+        };
+      }
     }
 
     if (msg.includes('fee') || msg.includes('price') || msg.includes('cost') || msg.includes('payment') || msg.includes('tuition')) {
@@ -625,11 +808,7 @@ export const aiService = {
         // Construct final prompt with document context
         let currentPrompt = "";
         if (documentContext) {
-          currentPrompt += `[CONTEXT FROM ATTACHED DOCUMENTS:
-${documentContext}
-]
-
-`;
+          currentPrompt += `[CONTEXT FROM ATTACHED DOCUMENTS:\n${documentContext}\n]\n\n`;
         }
         currentPrompt += `User Query: ${messageText}`;
 
@@ -637,6 +816,8 @@ ${documentContext}
           role: 'user',
           parts: [{ text: currentPrompt }]
         });
+
+        const courseNamesList = finalCourses.map(c => `- ${c.name} (ID: ${c.id})`).join('\n');
 
         const systemInstruction = {
           parts: [{
@@ -647,29 +828,38 @@ Primary Business Details:
 - Email Support: info@aurenzaacademy.com
 - Hotline Support: +91 70130 57827
 - Pricing: Showcase/catalog mode. We do not collect online payments or upfront tuitions. Counseling calls are free.
-- Placements: 1-on-1 counselor reviews, resume building, ATS alignment, and mock interviews with tech leads.
+- Placements: 1-on-1 counselor reviews, resume polishing, ATS alignment, and mock interviews with tech leads.
+
+Official Course Catalog:
+${courseNamesList}
 
 Course Recommendation Engine Rules:
-Analyze user queries, career goals, experience level, and any attached document text (like resumes) to match them with our official catalog courses:
-- AWS queries -> AWS Solutions Architect (course-aws) or AWS Solutions Architect Associate Certification (course-aws-solutions-architect-associate-certification)
-- Java queries -> Java Full Stack Development (course-java)
-- Data Analyst / Business Intelligence / SQL -> Microsoft Power BI (course-microsoft-power-bi) or Data Science & AI Bootcamp (course-dsai)
-- DevOps queries -> DevOps Engineer Program (course-devops) or SAFe 6.0 DevOps Certification (course-safe-60-devops-certification)
-- Freshers / Beginners -> Frontend Development (React & Next.js) (course-frontend) or Certified ScrumMaster (CSM) (course-csm)
-- Project Management -> PMP Certification (course-pmp) or CAPM Certification (course-capm-certification)
+Analyze user queries, career goals, experience level, and any attached document text to match them with our official catalog courses.
+When the user is asking for course recommendations, describing their goals, or inquiring about which program suits their skills, you MUST:
+1. Analyze ALL courses in the catalog.
+2. Categorize their career goals.
+3. Score every course out of 100 based on suitability.
+4. Select the best match.
+5. Identify alternative courses that are also relevant.
+6. Provide reasoning in a bulleted list.
 
-Each recommendation MUST be formatted exactly as follows:
-### Recommended Program: [Official Course Name] (ID: [course-id])
-* **Why Recommended**: [Clear reason matching user's query, goals, and skills]
-* **Skill Level**: [Beginner / Intermediate / Advanced]
-* **Expected Outcomes**: [Outcome 1, Outcome 2, etc.]
-* **Related Courses**: [Related Course Name (ID: related-course-id)]
-* **Learning Path Sequence**:
-  1. [Module 1]
-  2. [Module 2]
-  3. [Module 3]
+You MUST format the recommendation section EXACTLY as follows:
+Best Match:
+[Official Course Name]
+Match Score: [Score]%
 
-Maintain context memory across messages. Limit general chat answers to 130 words. Output in markdown.`
+Why Recommended:
+* [Reason 1]
+* [Reason 2]
+* [Reason 3]
+
+Alternative Courses:
+* [Alternative Course Name 1]
+* [Alternative Course Name 2]
+* [Alternative Course Name 3]
+* [Alternative Course Name 4]
+
+Never recommend random courses that are not in the catalog. Always provide clear, professional reasoning. Maintain context memory across messages. Limit general chat answers to 130 words. Output in markdown.`
           }]
         };
 
@@ -693,88 +883,22 @@ Maintain context memory across messages. Limit general chat answers to 130 words
     }
 
     // 3. Offline Local Keyword Recommendation Parser
-    // AWS Cloud
-    if (msg.includes('aws') || msg.includes('cloud') || msg.includes('azure')) {
-      const isAzure = msg.includes('azure');
-      const courseName = isAzure ? "Microsoft Azure Administrator" : "AWS Solutions Architect";
-      const courseId = isAzure ? "course-azure" : "course-aws";
-      return {
-        text: `### Recommended Program: ${courseName} (ID: ${courseId})
-* **Why Recommended**: You mentioned cloud computing. Certified cloud professionals are highly sought after for scaling infrastructure.
-* **Skill Level**: Intermediate
-* **Expected Outcomes**: Master VPC design, IAM security roles, load balancing, serverless setups, and compute instances.
-* **Related Courses**: DevOps Engineer Program (ID: course-devops)
-* **Learning Path Sequence**:
-  1. Cloud Foundations & Core Services
-  2. Advanced Cloud Architecture & Storage
-  3. Security, Monitoring & Migration Blueprints`,
-        quickActions: ['Book Free Counseling', 'Explore Courses']
-      };
-    }
+    const isRecommendationQuery = 
+      msg.includes('recommend') || msg.includes('counseling') || msg.includes('career') || 
+      msg.includes('suit') || msg.includes('course') || msg.includes('learn') || 
+      msg.includes('study') || msg.includes('goal') || msg.includes('fresher') || 
+      msg.includes('student') || msg.includes('professional') || msg.includes('job') ||
+      msg.includes('aws') || msg.includes('cloud') || msg.includes('azure') || 
+      msg.includes('java') || msg.includes('spring') || msg.includes('backend') || 
+      msg.includes('devops') || msg.includes('docker') || msg.includes('kubernetes') || 
+      msg.includes('data') || msg.includes('power bi') || msg.includes('analytics') || 
+      msg.includes('security') || msg.includes('cyber') || msg.includes('scrum') || 
+      msg.includes('agile') || msg.includes('pmp');
 
-    // Java
-    if (msg.includes('java') || msg.includes('spring') || msg.includes('backend')) {
+    if (isRecommendationQuery) {
+      const localRec = recommendCoursesLocally(messageText, finalCourses);
       return {
-        text: `### Recommended Program: Java Full Stack Development (ID: course-java)
-* **Why Recommended**: You showed interest in backend development. Java & Spring Boot form the backbone of corporate enterprise web systems.
-* **Skill Level**: Beginner -> Advanced
-* **Expected Outcomes**: Build relational database queries (SQL/Hibernate), develop REST APIs (Spring Boot), and integrate React.js frontends.
-* **Related Courses**: Frontend Development (React & Next.js) (ID: course-frontend)
-* **Learning Path Sequence**:
-  1. Core Java OOP Foundations
-  2. Relational Databases & ORM Hibernate
-  3. Spring Boot Rest APIs & Microservices`,
-        quickActions: ['Book Free Counseling', 'Explore Courses']
-      };
-    }
-
-    // DevOps
-    if (msg.includes('devops') || msg.includes('docker') || msg.includes('kubernetes') || msg.includes('ci')) {
-      return {
-        text: `### Recommended Program: DevOps Engineer Program (ID: course-devops)
-* **Why Recommended**: You inquired about DevOps automation. Bridging development and operations is crucial for modern agile deployment cycles.
-* **Skill Level**: Intermediate
-* **Expected Outcomes**: Program CI/CD automation pipelines, package containerized apps (Docker/Kubernetes), and configure infrastructure as code.
-* **Related Courses**: AWS Solutions Architect (ID: course-aws)
-* **Learning Path Sequence**:
-  1. Version Control & Git Workflows
-  2. Containers & Microservices (Docker & Kubernetes)
-  3. Continuous Integration Pipelines & Automated Testing`,
-        quickActions: ['Book Free Counseling', 'Explore Courses']
-      };
-    }
-
-    // Data / Power BI
-    if (msg.includes('data') || msg.includes('power bi') || msg.includes('analyst') || msg.includes('sql') || msg.includes('python')) {
-      const isBI = msg.includes('power bi') || msg.includes('bi');
-      const courseName = isBI ? "Microsoft Power BI" : "Data Science & AI Bootcamp";
-      const courseId = isBI ? "course-microsoft-power-bi" : "course-dsai";
-      return {
-        text: `### Recommended Program: ${courseName} (ID: ${courseId})
-* **Why Recommended**: You showed interest in data processing. Modern businesses rely heavily on data visualizations and modeling to drive decisions.
-* **Skill Level**: Intermediate -> Advanced
-* **Expected Outcomes**: Write data analytics algorithms (Python/Pandas), manage SQL databases, and build interactive executive dashboards.
-* **Related Courses**: AI & Machine Learning Engineering (ID: course-aiml)
-* **Learning Path Sequence**:
-  1. SQL Foundations & Data Aggregations
-  2. Python/DAX Analytical Formulas
-  3. Business Intelligence Visualizations & Reports`,
-        quickActions: ['Book Free Counseling', 'Explore Courses']
-      };
-    }
-
-    // Freshers / Beginners
-    if (msg.includes('fresher') || msg.includes('student') || msg.includes('beginner') || msg.includes('javascript') || msg.includes('react') || msg.includes('html')) {
-      return {
-        text: `### Recommended Program: Frontend Development (React & Next.js) (ID: course-frontend)
-* **Why Recommended**: Perfect starting program for beginners. Interactive web development provides rapid visual feedback and solid JS fundamentals.
-* **Skill Level**: Beginner
-* **Expected Outcomes**: Build semantic responsive UI layouts (HTML/CSS/Tailwind), control page state in React, and deploy Next.js apps to production.
-* **Related Courses**: Java Full Stack Development (ID: course-java)
-* **Learning Path Sequence**:
-  1. Responsive Styling & Tailwind Layouts
-  2. JavaScript ES6+ & Asynchronous Fetch API
-  3. React Hooks, Routing, and Next.js Pages`,
+        text: localRec.text,
         quickActions: ['Book Free Counseling', 'Explore Courses']
       };
     }
@@ -842,13 +966,14 @@ Maintain context memory across messages. Limit general chat answers to 130 words
 
     const hasInput = textToAnalyze.trim().length > 10 || counselorProfile;
 
-    // Fetch courses from DB catalog
+    // Fetch courses from DB catalog and merge with static catalog courses
     let allCourses: any[] = [];
     try {
       allCourses = await db.course.findMany();
     } catch (dbErr) {
       console.warn('Failed to query courses from db.course.findMany()', dbErr);
     }
+    const finalCourses = getFinalCatalog(allCourses);
 
     if (GEMINI_API_KEY && hasInput) {
       try {
@@ -870,7 +995,7 @@ ${textToAnalyze}`;
         }
 
         // Format course catalog context to send to Gemini
-        const catalogContext = allCourses.map((c: any) => {
+        const catalogContext = finalCourses.map((c: any) => {
           let syllabusModules: string[] = [];
           try {
             const parsed = typeof c.syllabus === 'string' ? JSON.parse(c.syllabus) : c.syllabus;
@@ -1000,9 +1125,8 @@ ${textToAnalyze}`;
         const parsed = JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
         if (parsed) {
           const primaryCourseId = parsed.bestMatch?.courseId || parsed.recommendedCourses?.[0] || 'course-java';
-          
-          // Find the actual course from allCourses to get dynamic roadmap steps if needed
-          const matchedDbCourse = allCourses.find((c: any) => c.id === primaryCourseId);
+          // Find the actual course from finalCourses to get dynamic roadmap steps if needed
+          const matchedDbCourse = finalCourses.find((c: any) => c.id === primaryCourseId);
           let dynamicSteps: string[] = [];
           if (matchedDbCourse) {
             try {
@@ -1030,6 +1154,6 @@ ${textToAnalyze}`;
     }
 
     // Fallback to local scanner
-    return scanLocalResume(textToAnalyze, counselorProfile, allCourses);
+    return scanLocalResume(textToAnalyze, counselorProfile, finalCourses);
   }
 };

@@ -68,6 +68,104 @@ export default function AuriChatbot() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const diagFileInputRef = useRef<HTMLInputElement>(null);
 
+  const [diagStatusStep, setDiagStatusStep] = useState<number>(0);
+  const [viewingFileText, setViewingFileText] = useState<string | null>(null);
+
+  const formatSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = 1;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  };
+
+  const renderVisibleFileCard = (file: any, isDiag: boolean = false) => {
+    if (!file) return null;
+    const isUploading = file.status === 'uploading';
+    const isError = file.status === 'error';
+    const isSuccess = file.status === 'success';
+    const displaySize = file.size ? formatSize(file.size) : '0 KB';
+    const fileExt = file.name.substring(file.name.lastIndexOf('.')).toUpperCase().replace('.', '');
+    
+    return (
+      <div 
+        key={file.id || 'diag-file'}
+        className={`p-3.5 rounded-2xl border flex flex-col gap-2 shadow-soft transition relative overflow-hidden ${
+          isError 
+            ? 'bg-red-50/50 border-red-200 text-red-600' 
+            : isUploading 
+              ? 'bg-neutral-50/50 border-neutral-200 text-neutral-500 animate-pulse' 
+              : 'bg-primary/5 border-primary/20 text-primary'
+        }`}
+      >
+        <div className="flex items-center gap-2 justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <FileText className="w-4 h-4 shrink-0 text-primary" />
+            <div className="min-w-0 space-y-0.5">
+              <p className="text-[10px] font-black text-textPrimary truncate max-w-[150px]" title={file.name}>
+                {file.name}
+              </p>
+              <span className="text-[8px] text-neutral-400 block font-bold uppercase tracking-wider">
+                {fileExt} • {displaySize}
+              </span>
+            </div>
+          </div>
+
+          {!isUploading && (
+            <div className="flex items-center gap-1.5 shrink-0">
+              {isSuccess && file.text && (
+                <button
+                  type="button"
+                  onClick={() => setViewingFileText(file.text)}
+                  className="text-[8px] font-black uppercase tracking-wider text-primary hover:text-primaryHover bg-white border border-primary/20 px-1.5 py-0.5 rounded shadow-soft transition"
+                >
+                  View File
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (isDiag) {
+                    setDiagFile(null);
+                    setResumeText('');
+                    setAnalysisResult(null);
+                  } else {
+                    removeFile(file.id);
+                  }
+                }}
+                className="text-[8px] font-black uppercase tracking-wider text-neutral-400 hover:text-red-500 bg-white border border-neutral-200 px-1.5 py-0.5 rounded shadow-soft transition"
+              >
+                Remove
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 text-[8px] font-bold border-t border-neutral-200/50 pt-1.5">
+          {isUploading ? (
+            <>
+              <span className="h-2.5 w-2.5 rounded-full border border-primary border-t-transparent animate-spin shrink-0"></span>
+              <span className="text-neutral-500">Uploading & Parsing Document...</span>
+            </>
+          ) : isError ? (
+            <>
+              <AlertCircle className="w-3 h-3 text-red-500 shrink-0" />
+              <span className="text-red-500 truncate text-[8px]" title={file.error || 'Parsing failed.'}>
+                Failed to parse file: {file.error || 'Unable to extract content.'}
+              </span>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />
+              <span className="text-green-600">✓ Uploaded Successfully</span>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll chatbot to bottom when message arrives
@@ -345,9 +443,29 @@ export default function AuriChatbot() {
 
     setParsing(true);
     setAnalysisResult(null);
+    setDiagStatusStep(0);
 
     try {
-      const result = await analyzeResumeAction(textToSubmit, fileName, profile);
+      // Start sequential progression for the first few steps
+      const progressPromise = (async () => {
+        // Step 0: Uploading (0 - 350ms)
+        await new Promise(r => setTimeout(r, 350));
+        setDiagStatusStep(1); // Parsing Resume... (350 - 700ms)
+        await new Promise(r => setTimeout(r, 350));
+        setDiagStatusStep(2); // Analyzing Skills... (700 - 1050ms)
+        await new Promise(r => setTimeout(r, 350));
+        setDiagStatusStep(3); // Generating Recommendations... (1050ms+)
+      })();
+
+      const [result] = await Promise.all([
+        analyzeResumeAction(textToSubmit, fileName, profile),
+        progressPromise
+      ]);
+
+      // Complete!
+      setDiagStatusStep(4); // Analysis Complete
+      await new Promise(r => setTimeout(r, 250)); // small delay for UX satisfaction
+
       if (result) {
         setAnalysisResult(result);
         setActiveReportTab('profile'); // Reset active tab in result dashboard
@@ -609,6 +727,7 @@ For career support, hotline support, and callback scheduling, contact:
                 {analysisResult ? (
                   /* DIAGNOSTICS COMPLETED RESULTS VIEW (FEATURE 7 Tabbed Report Cards) */
                   <div className="space-y-4">
+                    {diagFile && renderVisibleFileCard(diagFile, true)}
                     <div className="p-3 bg-successGreen/5 border border-successGreen/20 rounded-2xl flex items-center gap-2">
                       <CheckCircle2 className="w-4.5 h-4.5 text-successGreen shrink-0" />
                       <span className="text-xs font-bold text-successGreen">Screening diagnostics parsed successfully.</span>
@@ -1144,21 +1263,48 @@ For career support, hotline support, and callback scheduling, contact:
                         className="flex-1 py-2.5 rounded-xl bg-sectionBg hover:bg-white border border-borderLight text-center text-xs font-bold text-textPrimary transition"
                       >
                         Reset & Upload Again
-                      </button>
-                    </div>
+                    </button>
                   </div>
-                ) : parsing ? (
+                </div>
+              ) : parsing ? (
                   /* SCANNING ANIMATION LOADER */
-                  <div className="flex flex-col items-center justify-center text-center py-16 space-y-6">
+                  <div className="flex flex-col items-center justify-center text-center py-10 space-y-6 animate-fade-up w-full">
+                    {diagFile && (
+                      <div className="w-full text-left">
+                        {renderVisibleFileCard(diagFile, true)}
+                      </div>
+                    )}
                     <div className="relative w-14 h-14 rounded-full border border-primary/20 flex items-center justify-center">
                       <Bot className="w-6 h-6 text-primary animate-pulse" />
                       <span className="absolute inset-0 rounded-full border border-primary border-t-transparent animate-spin"></span>
                     </div>
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-bold text-textPrimary leading-none heading">Diagnosing Profile Semantics...</h4>
-                      <p className="text-[10px] text-textSecondary max-w-[200px] leading-normal mx-auto">
-                        Contrasting candidate background with industry-standard certification course metrics.
-                      </p>
+                    
+                    <div className="w-full max-w-[240px] text-left space-y-2 bg-sectionBg border border-borderLight p-4.5 rounded-2xl shadow-soft">
+                      {[
+                        "Uploading...",
+                        "Parsing Resume...",
+                        "Analyzing Skills...",
+                        "Generating Recommendations...",
+                        "Analysis Complete"
+                      ].map((stepText, idx) => {
+                        const isDone = diagStatusStep > idx;
+                        const isActive = diagStatusStep === idx;
+                        
+                        return (
+                          <div key={idx} className="flex items-center gap-2 text-[10px]">
+                            {isDone ? (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-green-500 shrink-0" />
+                            ) : isActive ? (
+                              <span className="h-3.5 w-3.5 rounded-full border-2 border-primary border-t-transparent animate-spin shrink-0"></span>
+                            ) : (
+                              <span className="h-3.5 w-3.5 rounded-full border-2 border-neutral-200 shrink-0"></span>
+                            )}
+                            <span className={`font-bold ${isActive ? 'text-primary font-black scale-102' : isDone ? 'text-green-600' : 'text-neutral-300'}`}>
+                              {stepText}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ) : isCounselorMode ? (
@@ -1342,34 +1488,7 @@ For career support, hotline support, and callback scheduling, contact:
                     </div>
 
                     {/* File uploading progress card */}
-                    {diagFile && (
-                      <div className={`p-3 rounded-2xl border text-[10px] font-bold flex items-center justify-between ${
-                        diagFile.status === 'error' 
-                          ? 'bg-red-50 border-red-200 text-red-600' 
-                          : diagFile.status === 'uploading' 
-                            ? 'bg-neutral-50 border-neutral-200 text-neutral-500 animate-pulse' 
-                            : 'bg-primary/5 border-primary/10 text-primary'
-                      }`}>
-                        <div className="flex items-center gap-1.5 truncate">
-                          <FileText className="w-4 h-4 shrink-0" />
-                          <span className="truncate max-w-[150px]">{diagFile.name}</span>
-                        </div>
-                        {diagFile.status === 'uploading' ? (
-                          <LoadingSpinner size="xs" />
-                        ) : (
-                          <button 
-                            type="button" 
-                            onClick={() => {
-                              setDiagFile(null);
-                              setResumeText('');
-                            }}
-                            className="text-textSecondary hover:text-red-500 transition"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    )}
+                    {diagFile && renderVisibleFileCard(diagFile, true)}
 
                     {/* Manual Paste Textarea option */}
                     <div className="space-y-1.5">
@@ -1417,39 +1536,8 @@ Goal: Become a Data Analyst."
 
           {/* Uploaded File Cards Panel (Only on Counsellor Chat Tab) */}
           {activeTab === 'chat' && uploadedFiles.length > 0 && (
-            <div className="px-3.5 py-2.5 bg-sectionBg/80 border-t border-borderLight flex flex-wrap gap-2 max-h-[120px] overflow-y-auto z-10">
-              {uploadedFiles.map(file => {
-                const isUploading = file.status === 'uploading';
-                const isError = file.status === 'error';
-                
-                return (
-                  <div
-                    key={file.id}
-                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-[10px] font-bold transition shadow-soft ${
-                      isError 
-                        ? 'bg-red-50 border-red-200 text-red-600' 
-                        : isUploading 
-                          ? 'bg-neutral-50 border-neutral-200 text-neutral-500 animate-pulse' 
-                          : 'bg-primary/5 border-primary/10 text-primary'
-                    }`}
-                  >
-                    <FileText className="w-3.5 h-3.5 shrink-0" />
-                    <span className="truncate max-w-[80px]" title={file.name}>{file.name}</span>
-                    {isUploading ? (
-                      <LoadingSpinner size="xs" />
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => removeFile(file.id)}
-                        className="hover:text-red-500 text-textSecondary transition ml-1"
-                        title="Remove file"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="px-3.5 py-3.5 bg-sectionBg/80 border-t border-borderLight grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[180px] overflow-y-auto z-10">
+              {uploadedFiles.map(file => renderVisibleFileCard(file, false))}
             </div>
           )}
 
@@ -1501,6 +1589,41 @@ Goal: Become a Data Analyst."
             </form>
           )}
 
+        </div>
+      )}
+
+      {/* Document Text Viewer Modal */}
+      {viewingFileText !== null && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white border border-borderLight w-full max-w-lg rounded-2xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden animate-scale-up">
+            {/* Modal Header */}
+            <div className="bg-sectionBg px-4.5 py-3.5 border-b border-borderLight flex items-center justify-between text-textPrimary">
+              <h5 className="text-xs font-black uppercase tracking-wider text-primary flex items-center gap-1.5 leading-none">
+                <FileText className="w-4 h-4 text-primary" /> Extracted Document Text
+              </h5>
+              <button
+                type="button"
+                onClick={() => setViewingFileText(null)}
+                className="p-1 rounded-full hover:bg-neutral-200 text-textSecondary hover:text-textPrimary transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Modal Body */}
+            <div className="p-4 overflow-y-auto flex-1 font-mono text-[10px] text-textPrimary leading-relaxed whitespace-pre-wrap bg-neutral-50/50 selection:bg-primary/20">
+              {viewingFileText || 'No text extracted from this file.'}
+            </div>
+            {/* Modal Footer */}
+            <div className="bg-sectionBg px-4 py-3 border-t border-borderLight flex justify-end">
+              <button
+                type="button"
+                onClick={() => setViewingFileText(null)}
+                className="px-4 py-2 bg-primary hover:bg-primaryHover text-white text-xs font-bold rounded-xl transition shadow-soft"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
