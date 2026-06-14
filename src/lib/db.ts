@@ -442,6 +442,28 @@ export const mockPrismaProxy = new Proxy({}, {
   }
 });
 
+// Circuit breaker status
+let liveDbDisabled = false;
+const QUERY_TIMEOUT_MS = 2500;
+
+// Timeout wrapper to prevent database hangs
+const withTimeout = (promise: Promise<any>, errorMessage: string): Promise<any> => {
+  let timeoutId: any;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`[Database Timeout] ${errorMessage} (exceeded ${QUERY_TIMEOUT_MS}ms)`));
+    }, QUERY_TIMEOUT_MS);
+  });
+
+  return Promise.race([
+    promise.then((res) => {
+      clearTimeout(timeoutId);
+      return res;
+    }),
+    timeoutPromise
+  ]);
+};
+
 // Unified resilient database client proxy with automatic local JSON fallback
 const createResilientDbProxy = () => {
   const liveDb = prismaInstance;
@@ -449,7 +471,7 @@ const createResilientDbProxy = () => {
 
   return new Proxy({}, {
     get: (target, propName: string) => {
-      if (USE_LOCAL_MOCK) {
+      if (USE_LOCAL_MOCK || liveDbDisabled || !liveDb) {
         return (mockDb as any)[propName];
       }
 
@@ -463,9 +485,16 @@ const createResilientDbProxy = () => {
       if (typeof liveModel === 'function') {
         return async (...args: any[]) => {
           try {
-            return await liveModel(...args);
+            if (liveDbDisabled) {
+              return typeof mockModel === 'function' ? await mockModel(...args) : mockModel;
+            }
+            return await withTimeout(
+              liveModel(...args),
+              `Executing ${propName}`
+            );
           } catch (err) {
-            console.error(`[Aurenza Database] Live query failed on ${propName}, falling back to mock:`, err);
+            console.error(`[Aurenza Database] Live query failed on ${propName}, enabling offline circuit breaker:`, err);
+            liveDbDisabled = true;
             return typeof mockModel === 'function' ? await mockModel(...args) : mockModel;
           }
         };
@@ -480,9 +509,19 @@ const createResilientDbProxy = () => {
           if (typeof liveMethod === 'function') {
             return async (...args: any[]) => {
               try {
-                return await liveMethod.apply(modelTarget, args);
+                if (liveDbDisabled) {
+                  if (mockMethod && typeof mockMethod === 'function') {
+                    return await mockMethod(...args);
+                  }
+                  return null;
+                }
+                return await withTimeout(
+                  liveMethod.apply(modelTarget, args),
+                  `Querying ${propName}.${method}`
+                );
               } catch (err) {
-                console.error(`[Aurenza Database] Live query failed on ${propName}.${method}, falling back to mock:`, err);
+                console.error(`[Aurenza Database] Live query failed on ${propName}.${method}, enabling offline circuit breaker:`, err);
+                liveDbDisabled = true;
                 if (mockMethod && typeof mockMethod === 'function') {
                   return await mockMethod(...args);
                 }
