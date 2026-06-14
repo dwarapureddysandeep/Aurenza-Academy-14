@@ -78,7 +78,7 @@ function getPremiumImageForCourse(name, catId) {
     return "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=800&q=80"; // enterprise infrastructure
   }
   if (n.includes('devops') || n.includes('docker') || n.includes('kubernetes')) {
-    return "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=800&q=80"; // devops pipeline
+    return "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=800&q=80"; // devops pipeline
   }
   if (n.includes('java') || n.includes('full stack') || n.includes('frontend') || n.includes('react') || n.includes('scrum developer')) {
     return "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"; // code IDE editor
@@ -90,7 +90,7 @@ function getPremiumImageForCourse(name, catId) {
     return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"; // business graphs
   }
   if (n.includes('ai &') || n.includes('machine learning') || n.includes('artificial intelligence') || n.includes('deep learning')) {
-    return "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80"; // neural connections
+    return "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80"; // neural connections
   }
   if (n.includes('cissp') || n.includes('security') || n.includes('hack') || n.includes('ethical')) {
     return "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80"; // security shields
@@ -106,9 +106,9 @@ function getPremiumImageForCourse(name, catId) {
   switch (catId) {
     case 'cat-1': return "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80"; // agile
     case 'cat-2': return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80"; // data science
-    case 'cat-3': return "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80"; // AI
+    case 'cat-3': return "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80"; // AI
     case 'cat-4': return "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80"; // cloud
-    case 'cat-5': return "https://images.unsplash.com/photo-1618401471353-b98aedd07871?auto=format&fit=crop&w=800&q=80"; // DevOps
+    case 'cat-5': return "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=800&q=80"; // DevOps
     case 'cat-6': return "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80"; // cyber sec
     case 'cat-7': return "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80"; // dev
     case 'cat-8': return "https://images.unsplash.com/photo-1533750349088-cd871a92f312?auto=format&fit=crop&w=800&q=80"; // digital marketing

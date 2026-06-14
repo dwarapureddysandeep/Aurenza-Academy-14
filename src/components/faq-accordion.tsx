@@ -41,7 +41,7 @@ const FAQS: FAQItem[] = [
   },
   {
     question: "How can I contact support?",
-    answer: "You can reach out to our corporate advisors via email (aurenzaacademy@gmail.com), phone/WhatsApp hotline (+91 7013057827), or by submitting the contact forms available on our website."
+    answer: "You can reach out to our corporate advisors via email (info@aurenzaacademy.com), phone/WhatsApp hotline (+91 7013057827), or by submitting the contact forms available on our website."
   }
 ];
 

@@ -115,7 +115,7 @@ export default function Footer() {
             <ul className="space-y-3 text-[14px] text-textSecondary font-medium">
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-primary shrink-0" />
-                <a href="mailto:aurenzaacademy@gmail.com" className="hover:text-primary transition">aurenzaacademy@gmail.com</a>
+                <a href="mailto:info@aurenzaacademy.com" className="hover:text-primary transition">info@aurenzaacademy.com</a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-secondary shrink-0" />

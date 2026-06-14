@@ -28,7 +28,7 @@ async function main() {
     data: {
       id: "user-admin",
       name: "Aurenza Admin",
-      email: "aurenzaacademy@gmail.com",
+      email: "info@aurenzaacademy.com",
       password: "aur_hash_aurenza_admin", // Mock representation of hashed password
       phone: "+91 7013057827",
       role: "ADMIN",
@@ -172,7 +172,7 @@ async function main() {
       price: 44999.0,
       rating: 4.9,
       reviewsCount: 198,
-      image: "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80",
       mentorName: "Dr. Vivek Sharma",
       mentorExp: "Ph.D. in AI, ex-Google Brain Scientist",
       mentorAvatar: "V",

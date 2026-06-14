@@ -24,7 +24,7 @@ if (hasDatabaseUrl) {
   }
 }
 
-export const USE_LOCAL_MOCK = true;
+export const USE_LOCAL_MOCK = process.env.USE_LOCAL_MOCK === 'false' ? false : !hasDatabaseUrl;
 console.log(`[Aurenza Database] Mode: ${USE_LOCAL_MOCK ? 'OFFLINE LOCAL JSON FALLBACK' : 'LIVE SUPABASE POSTGRESQL'}`);
 
 // ==========================================
@@ -38,7 +38,7 @@ const DEFAULT_MOCK_DATA = {
   users: [
     {
       id: "user-admin",
-      email: "aurenzaacademy@gmail.com",
+      email: "info@aurenzaacademy.com",
       password: "aur_hash_aurenza_admin", // mock password representation
       name: "Aurenza Admin",
       phone: "+91 7013057827",
@@ -151,7 +151,7 @@ const DEFAULT_MOCK_DATA = {
       price: 44999,
       rating: 4.9,
       reviewsCount: 198,
-      image: "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80",
+      image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80",
       mentorName: "Dr. Vivek Sharma",
       mentorExp: "Ph.D. in AI, ex-Google Brain Scientist",
       mentorAvatar: "V",
@@ -442,5 +442,59 @@ export const mockPrismaProxy = new Proxy({}, {
   }
 });
 
-// Unified export
-export const db = USE_LOCAL_MOCK ? (mockPrismaProxy as unknown as PrismaClient) : prismaInstance;
+// Unified resilient database client proxy with automatic local JSON fallback
+const createResilientDbProxy = () => {
+  const liveDb = prismaInstance;
+  const mockDb = mockPrismaProxy;
+
+  return new Proxy({}, {
+    get: (target, propName: string) => {
+      if (USE_LOCAL_MOCK) {
+        return (mockDb as any)[propName];
+      }
+
+      const liveModel = liveDb ? (liveDb as any)[propName] : null;
+      const mockModel = (mockDb as any)[propName];
+
+      if (!liveModel) {
+        return mockModel;
+      }
+
+      if (typeof liveModel === 'function') {
+        return async (...args: any[]) => {
+          try {
+            return await liveModel(...args);
+          } catch (err) {
+            console.error(`[Aurenza Database] Live query failed on ${propName}, falling back to mock:`, err);
+            return typeof mockModel === 'function' ? await mockModel(...args) : mockModel;
+          }
+        };
+      }
+
+      // Wrap prisma model methods (findMany, findUnique, findFirst, create, update, delete, count, upsert, etc.)
+      return new Proxy(liveModel, {
+        get: (modelTarget, method: string) => {
+          const liveMethod = modelTarget[method];
+          const mockMethod = mockModel ? mockModel[method] : null;
+
+          if (typeof liveMethod === 'function') {
+            return async (...args: any[]) => {
+              try {
+                return await liveMethod.apply(modelTarget, args);
+              } catch (err) {
+                console.error(`[Aurenza Database] Live query failed on ${propName}.${method}, falling back to mock:`, err);
+                if (mockMethod && typeof mockMethod === 'function') {
+                  return await mockMethod(...args);
+                }
+                throw err;
+              }
+            };
+          }
+          return liveMethod;
+        }
+      });
+    }
+  });
+};
+
+export const db = createResilientDbProxy() as unknown as PrismaClient;

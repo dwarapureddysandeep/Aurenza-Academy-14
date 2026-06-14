@@ -146,7 +146,7 @@ export default function AdminCrmWidget({
   const [settingsForm, setSettingsForm] = useState({
     logo: 'Aurenza Academy',
     contactPhone: '+91 7013057827',
-    contactEmail: 'aurenzaacademy@gmail.com',
+    contactEmail: 'info@aurenzaacademy.com',
     contactWhatsapp: '+91 7013057827',
     socialLinkedin: 'https://linkedin.com/company/aurenza-academy',
     socialTwitter: 'https://twitter.com/aurenza_academy',

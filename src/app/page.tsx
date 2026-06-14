@@ -41,7 +41,7 @@ export default async function HomePage() {
       {/* ==========================================
          NEW SECTION: TRENDING COURSES (Primary Conversion Section)
          ========================================== */}
-      <TrendingCourses initialCourses={courses} />
+      <TrendingCourses initialCourses={courses as any} />
 
       {/* ==========================================
          SECTION 2: FEATURED CERTIFICATIONS (Off-White Background - Duplicating Second Screenshot)
@@ -288,7 +288,7 @@ export default async function HomePage() {
                   </div>
                   <div>
                     <h5 className="font-extrabold text-textPrimary heading">Support Mail</h5>
-                    <Link href="mailto:aurenzaacademy@gmail.com" className="text-xs text-textSecondary hover:text-primary transition mt-1 block">aurenzaacademy@gmail.com</Link>
+                    <Link href="mailto:info@aurenzaacademy.com" className="text-xs text-textSecondary hover:text-primary transition mt-1 block">info@aurenzaacademy.com</Link>
                   </div>
                 </div>
               </div>

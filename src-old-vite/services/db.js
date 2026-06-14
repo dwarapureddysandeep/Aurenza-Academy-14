@@ -144,7 +144,7 @@ const SEED_COURSES = [
     price: 44999,
     rating: 4.9,
     reviewsCount: 198,
-    image: 'https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80',
     mentor: {
       name: 'Dr. Vivek Sharma',
       experience: 'Ph.D. in AI, ex-Google Brain Scientist',

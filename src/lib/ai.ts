@@ -232,7 +232,7 @@ export const aiService = {
 
     if (msg.includes('contact') || msg.includes('phone') || msg.includes('hotline') || msg.includes('call') || msg.includes('email') || msg.includes('support') || msg.includes('address') || msg.includes('office') || msg.includes('location')) {
       return {
-        text: "You can connect with Aurenza Academy advisors through multiple support channels:\n\n- 📞 **Hotline**: +91 70130 57827\n- ✉️ **Support Email**: aurenzaacademy@gmail.com\n- 📍 **Head Office**: Gajuwaka, Visakhapatnam, India\n\nFeel free to write to us or register for an inbound callback!",
+        text: "You can connect with Aurenza Academy advisors through multiple support channels:\n\n- 📞 **Hotline**: +91 70130 57827\n- ✉️ **Support Email**: info@aurenzaacademy.com\n- 📍 **Head Office**: Gajuwaka, Visakhapatnam, India\n\nFeel free to write to us or register for an inbound callback!",
         quickActions: ['Book Free Counseling', 'Explore Courses']
       };
     }
@@ -250,7 +250,7 @@ export const aiService = {
                 
                 Aurenza Academy Business Rules:
                 1. Location: Gajuwaka, Visakhapatnam, India.
-                2. Contact Email: aurenzaacademy@gmail.com
+                2. Contact Email: info@aurenzaacademy.com
                 3. Hotline Phone: +91 70130 57827
                 4. Fees & Pricing: Aurenza Academy functions as a premium course catalog and showcase. We do not collect upfront online tuition or payments; fees are handled through counselor coaching plans or corporate packages.
                 5. Placements: We offer 1-on-1 placement referrals, resume reviews, ATS optimization, and mock sessions with corporate managers to refer learners to our 500+ hiring partners.

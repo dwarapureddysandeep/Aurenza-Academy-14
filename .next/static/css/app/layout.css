@@ -2339,6 +2339,9 @@ body {
 .pb-4{
   padding-bottom: 1rem;
 }
+.pb-5{
+  padding-bottom: 1.25rem;
+}
 .pb-6{
   padding-bottom: 1.5rem;
 }
@@ -2368,6 +2371,9 @@ body {
 }
 .pr-6{
   padding-right: 1.5rem;
+}
+.pt-0{
+  padding-top: 0px;
 }
 .pt-1{
   padding-top: 0.25rem;
@@ -3658,6 +3664,10 @@ body {
   text-decoration-line: underline;
 }
 
+.hover\:no-underline:hover{
+  text-decoration-line: none;
+}
+
 .hover\:opacity-90:hover{
   opacity: 0.9;
 }
@@ -3820,6 +3830,11 @@ body {
 .group:hover .group-hover\:bg-primary{
   --tw-bg-opacity: 1;
   background-color: rgb(122 0 140 / var(--tw-bg-opacity, 1));
+}
+
+.group\/title:hover .group-hover\/title\:text-primary{
+  --tw-text-opacity: 1;
+  color: rgb(122 0 140 / var(--tw-text-opacity, 1));
 }
 
 .group:hover .group-hover\:text-\[\#7A008C\]{

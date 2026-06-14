@@ -87,7 +87,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="aurenzaacademy@gmail.com"
+              placeholder="info@aurenzaacademy.com"
               className="glass-input text-xs sm:text-sm font-semibold text-textPrimary"
             />
           </div>
@@ -130,7 +130,7 @@ export default function LoginPage() {
           <div className="pt-2 text-xs text-textPrimary border-t border-borderLight/60 mt-2 space-y-2">
             <div className="flex justify-between items-center gap-2">
               <span className="text-textSecondary font-bold">Email:</span>
-              <code className="text-primary font-bold select-all bg-white px-2 py-0.5 rounded border border-borderLight font-mono text-[11px]">aurenzaacademy@gmail.com</code>
+              <code className="text-primary font-bold select-all bg-white px-2 py-0.5 rounded border border-borderLight font-mono text-[11px]">info@aurenzaacademy.com</code>
             </div>
             <div className="flex justify-between items-center gap-2">
               <span className="text-textSecondary font-bold">Password:</span>

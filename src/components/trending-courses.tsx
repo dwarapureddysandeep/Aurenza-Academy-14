@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { 
@@ -199,11 +200,13 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
               >
                 {/* Image Banner Section */}
                 <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
-                  <img 
-                    src={course.image} 
-                    alt={course.name}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                  />
+                  <Link href={`/courses/${course.slug}`} className="block w-full h-full">
+                    <img 
+                      src={course.image} 
+                      alt={course.name}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </Link>
                   
                   {/* Compare Overlay Checkbox */}
                   <label className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white/95 backdrop-blur-sm border border-borderLight shadow-sm cursor-pointer select-none transition hover:scale-105 active:scale-95">
@@ -259,9 +262,11 @@ export default function TrendingCourses({ initialCourses }: TrendingCoursesProps
 
                   {/* Course Title */}
                   <div className="space-y-1">
-                    <h3 className="text-base sm:text-lg font-black text-textPrimary leading-snug group-hover:text-primary transition duration-300 heading line-clamp-1">
-                      {course.name}
-                    </h3>
+                    <Link href={`/courses/${course.slug}`} className="block group/title">
+                      <h3 className="text-base sm:text-lg font-black text-textPrimary leading-snug group-hover/title:text-primary transition duration-300 heading line-clamp-1">
+                        {course.name}
+                      </h3>
+                    </Link>
                     <p className="text-[11px] font-semibold text-[#8A8A9A] flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5 text-primary" /> {course.duration} &bull; {course.level}
                     </p>

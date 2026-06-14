@@ -31,19 +31,25 @@ export default async function CourseDetailPage({ params }: PageProps) {
   // 3. Fetch general testimonials for outcomes section
   const testimonials = await db.testimonial.findMany();
 
-  // 4. Parse syllabus and FAQs JSON arrays
+  // 4. Parse syllabus and FAQs JSON arrays safely
   let syllabusItems = [];
-  try {
-    syllabusItems = JSON.parse(course.syllabus);
-  } catch (e) {
-    syllabusItems = [];
+  if (course.syllabus) {
+    try {
+      const parsed = typeof course.syllabus === 'string' ? JSON.parse(course.syllabus) : course.syllabus;
+      syllabusItems = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      syllabusItems = [];
+    }
   }
 
   let faqItems = [];
-  try {
-    faqItems = JSON.parse(course.faqs);
-  } catch (e) {
-    faqItems = [];
+  if (course.faqs) {
+    try {
+      const parsed = typeof course.faqs === 'string' ? JSON.parse(course.faqs) : course.faqs;
+      faqItems = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      faqItems = [];
+    }
   }
 
   // Fake enrolled counter based on reviews count
@@ -256,7 +262,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
 
           <div className="bg-white border border-borderLight p-6 sm:p-8 rounded-[32px] flex flex-col md:flex-row gap-8 items-center shadow-soft">
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[24px] bg-gradient-to-r from-primary to-accent font-black text-white text-3xl flex items-center justify-center shrink-0 shadow-soft">
-              {course.mentorAvatar || course.mentorName.substring(0, 1)}
+              {course.mentorAvatar || (course.mentorName ? course.mentorName.substring(0, 1) : "M")}
             </div>
             
             <div className="space-y-4 text-center md:text-left flex-1">

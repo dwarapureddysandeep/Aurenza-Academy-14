@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { db } from '@/lib/db';
 import CourseFilterGrid from '@/components/course-filter-grid';
 import { GraduationCap } from 'lucide-react';
@@ -8,8 +8,13 @@ export const metadata = {
   description: "Explore 28 enterprise-grade career certification cohorts in Java Full Stack, Spring Boot Microservices, Next.js frontend architectures, and Machine Learning pipelines."
 };
 
-export default async function CoursesCatalogPage() {
-  // Pull courses dynamically
+interface PageProps {
+  searchParams: Promise<{ search?: string }>;
+}
+
+export default async function CoursesCatalogPage({ searchParams }: PageProps) {
+  const resolvedParams = await searchParams;
+  const search = resolvedParams?.search || '';
   const courses = await db.course.findMany();
 
   return (
@@ -32,7 +37,9 @@ export default async function CoursesCatalogPage() {
         </div>
 
         {/* Dynamic Catalog Filter Grid */}
-        <CourseFilterGrid initialCourses={courses} />
+        <Suspense fallback={<div className="text-center py-12 text-xs font-bold text-textSecondary animate-pulse">Loading course catalog...</div>}>
+          <CourseFilterGrid initialCourses={courses} searchParam={search} />
+        </Suspense>
 
       </div>
     </div>

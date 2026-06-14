@@ -57,7 +57,7 @@ export default function ContactPage() {
                   <Mail className="w-5 h-5 text-applePink shrink-0 mt-0.5" />
                   <div>
                     <h5 className="font-bold text-white">Official Support Email</h5>
-                    <Link href="mailto:aurenzaacademy@gmail.com" className="text-xs text-neutral-400 hover:text-white transition mt-1 block">aurenzaacademy@gmail.com</Link>
+                    <Link href="mailto:info@aurenzaacademy.com" className="text-xs text-neutral-400 hover:text-white transition mt-1 block">info@aurenzaacademy.com</Link>
                   </div>
                 </div>
               </div>

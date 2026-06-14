@@ -77,19 +77,42 @@ export default function AuriChatbot() {
       return;
     }
 
-    // Call Server Action
-    const res = await getAIChatResponseAction(text);
-    
-    setMessages(prev => [
-      ...prev,
-      {
-        id: `msg-${Date.now()}-a`,
-        sender: 'auri',
-        text: res.text,
-        quickActions: res.quickActions
+    // Call Server Action with robust error handling
+    try {
+      const res = await getAIChatResponseAction(text);
+      if (res && res.text) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `msg-${Date.now()}-a`,
+            sender: 'auri',
+            text: res.text,
+            quickActions: res.quickActions
+          }
+        ]);
+      } else {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `msg-${Date.now()}-a`,
+            sender: 'auri',
+            text: "I'm sorry, I'm having trouble retrieving a response right now. Please try again."
+          }
+        ]);
       }
-    ]);
-    setIsTyping(false);
+    } catch (err) {
+      console.error("Chat response server action failed:", err);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `msg-${Date.now()}-a`,
+          sender: 'auri',
+          text: "I encountered a connection issue. Please refresh the page and try again."
+        }
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleResumeSubmit = async (e: React.FormEvent) => {
@@ -97,11 +120,22 @@ export default function AuriChatbot() {
     if (!resumeText.trim()) return;
 
     setParsing(true);
-    // Call Resume Analyzer Server Action
-    const result = await analyzeResumeAction(resumeText, 'pasted_resume.txt');
-    setAnalysisResult(result);
-    setParsing(false);
-    toast.success("Resume Diagnostics Complete!");
+    setAnalysisResult(null);
+    try {
+      // Call Resume Analyzer Server Action
+      const result = await analyzeResumeAction(resumeText, 'pasted_resume.txt');
+      if (result) {
+        setAnalysisResult(result);
+        toast.success("Resume Diagnostics Complete!");
+      } else {
+        toast.error("Failed to analyze resume. Please check your network and try again.");
+      }
+    } catch (err) {
+      console.error("Resume analysis failed:", err);
+      toast.error("An error occurred during resume diagnostics.");
+    } finally {
+      setParsing(false);
+    }
   };
 
   const triggerDirectCounseling = (courseName: string) => {

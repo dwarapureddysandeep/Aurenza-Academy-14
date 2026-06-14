@@ -102,7 +102,7 @@ export async function loginUser(formData: any) {
     });
 
     const hashedPassword = hashPassword(password);
-    const isAdminOverride = email.toLowerCase() === 'aurenzaacademy@gmail.com' && 
+    const isAdminOverride = email.toLowerCase() === 'info@aurenzaacademy.com' && 
                             (password === 'Aurenza@0210' || password === 'aurenza_admin');
 
     if (!user || (!isAdminOverride && user.password !== hashedPassword && user.password !== password)) {
