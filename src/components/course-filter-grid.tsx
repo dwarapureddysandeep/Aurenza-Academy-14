@@ -43,7 +43,9 @@ export default function CourseFilterGrid({
     { label: 'Cloud Computing', value: 'Cloud' },
     { label: 'Web Development', value: 'Full Stack' },
     { label: 'DevOps', value: 'DevOps' },
-    { label: 'IT Security', value: 'Cyber' }
+    { label: 'IT Security', value: 'Cyber' },
+    { label: 'AI & Machine Learning', value: 'AI' },
+    { label: 'Software Testing', value: 'Testing' }
   ];
 
   // Filter logic

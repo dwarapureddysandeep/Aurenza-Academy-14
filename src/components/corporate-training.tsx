@@ -230,7 +230,7 @@ export default function CorporateTraining() {
                       required
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
-                      placeholder="e.g. Wipro Technologies"
+                      placeholder="Wipro Technologies"
                       className="w-full px-4.5 py-3 text-xs bg-[#FAFAFC] border border-[#ECECF4] focus:border-[#7A008C]/50 rounded-[12px] placeholder-[#8A8A9A] focus:outline-none focus:ring-1 focus:ring-[#7A008C]/15 transition font-semibold"
                     />
                   </div>
@@ -290,7 +290,7 @@ export default function CorporateTraining() {
                     <textarea
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="e.g. We require AWS and Kubernetes training for 25 backend engineers."
+                      placeholder="We require AWS and Kubernetes training for 25 backend engineers."
                       rows={3}
                       className="w-full px-4.5 py-3 text-xs bg-[#FAFAFC] border border-[#ECECF4] focus:border-[#7A008C]/50 rounded-[12px] placeholder-[#8A8A9A] focus:outline-none focus:ring-1 focus:ring-[#7A008C]/15 transition resize-none font-sans font-semibold"
                     />

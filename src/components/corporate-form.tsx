@@ -86,7 +86,7 @@ export default function CorporateForm() {
             required
             value={company}
             onChange={(e) => setCompany(e.target.value)}
-            placeholder="e.g. Microsoft India"
+            placeholder="Microsoft India"
             className="glass-input text-xs py-2.5"
           />
         </div>
@@ -99,7 +99,7 @@ export default function CorporateForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="e.g. corporate@company.com"
+            placeholder="corporate@company.com"
             className="glass-input text-xs py-2.5"
           />
         </div>
@@ -145,7 +145,7 @@ export default function CorporateForm() {
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="e.g. We require intensive training in microservices systems security & cloud AWS Solution designs for 40 of our engineers."
+          placeholder="We require intensive training in microservices systems security & cloud AWS Solution designs for 40 of our engineers."
           rows={3}
           className="glass-input text-xs py-2.5 resize-none font-sans"
         />
