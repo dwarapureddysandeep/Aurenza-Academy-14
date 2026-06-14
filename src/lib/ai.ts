@@ -48,6 +48,20 @@ export interface ResumeAnalysis {
     priority3: string[];
   };
   learningPathPhase?: string;
+  bestMatch?: {
+    courseId: string;
+    courseName: string;
+    suitabilityScore: number;
+    whyRecommended: string;
+    expectedSalary: string;
+    possibleJobRoles: string[];
+    learningPath: string[];
+  };
+  rankedAlternatives?: {
+    courseId: string;
+    courseName: string;
+    suitabilityScore: number;
+  }[];
 }
 
 export interface ChatResponse {
@@ -113,11 +127,10 @@ const SUGGESTED_ROADMAPS: Record<string, Roadmap> = {
 /**
  * Perform keyword-based local skill & gap scanner or counselor profile mapping
  */
-function scanLocalResume(text: string, counselorProfile: any = null): ResumeAnalysis {
+function scanLocalResume(text: string, counselorProfile: any = null, allCourses: any[] = []): ResumeAnalysis {
   const content = text.toLowerCase();
   let detectedSkills: string[] = [];
   let skillGaps: string[] = [];
-  let matchedCourseIds = new Set<string>();
   let name = "Extracted Candidate";
   let education = "Technical Degree (Extracted)";
   let certifications = ["Aurenza Certified Foundation"];
@@ -136,49 +149,36 @@ function scanLocalResume(text: string, counselorProfile: any = null): ResumeAnal
     const preferredTech = counselorProfile.preferredTech || "Modern Stacks";
 
     if (detectedDomain.includes('Cloud') || detectedDomain.toLowerCase().includes('aws') || detectedDomain.toLowerCase().includes('azure')) {
-      matchedCourseIds.add('course-aws');
-      matchedCourseIds.add('course-azure');
       detectedSkills = ['Cloud Basics', 'Infrastructure Concepts', preferredTech];
       skillGaps = ['VPC Networking', 'IAM Security Policies', 'EC2 & S3 Compute/Storage', 'AWS CloudFormation'];
       tools = ['AWS Management Console', 'Terraform', 'Git'];
       projects = ['Multi-tier AWS Web Deployment', 'Secure Cloud Architecture'];
     } else if (detectedDomain.includes('Full Stack') || detectedDomain.includes('Frontend') || detectedDomain.toLowerCase().includes('web') || detectedDomain.toLowerCase().includes('react') || detectedDomain.toLowerCase().includes('java')) {
-      matchedCourseIds.add('course-java');
-      matchedCourseIds.add('course-frontend');
       detectedSkills = ['HTML/CSS Basics', 'JavaScript ES6', preferredTech];
       skillGaps = ['Spring Boot Framework', 'RESTful Microservices APIs', 'Hibernate ORM', 'Relational SQL Databases'];
       tools = ['VS Code', 'IntelliJ IDEA', 'Postman', 'Git'];
       projects = ['Spring Boot & React CRUD Portal', 'E-commerce API Gateway'];
     } else if (detectedDomain.includes('Data') || detectedDomain.toLowerCase().includes('analytics') || detectedDomain.toLowerCase().includes('bi')) {
-      matchedCourseIds.add('course-microsoft-power-bi');
-      matchedCourseIds.add('course-dsai');
       detectedSkills = ['Spreadsheets', 'Data Cleaning', preferredTech];
       skillGaps = ['Advanced SQL Queries', 'Power BI Data Modeling', 'Excel Analytics formulas', 'Python Data Science libraries'];
       tools = ['Power BI Desktop', 'Jupyter Notebooks', 'Excel'];
       projects = ['Executive Sales Dashboard', 'Customer Churn Analysis'];
     } else if (detectedDomain.includes('AI') || detectedDomain.includes('Machine') || detectedDomain.toLowerCase().includes('learning') || detectedDomain.toLowerCase().includes('deep')) {
-      matchedCourseIds.add('course-aiml');
-      matchedCourseIds.add('course-dsai');
       detectedSkills = ['Python programming', 'Mathematical optimization', preferredTech];
       skillGaps = ['Deep Neural Networks', 'PyTorch / TensorFlow coding', 'NLP Transformer architectures', 'MLOps models pipelines'];
       tools = ['PyTorch', 'TensorFlow', 'Google Colab', 'Docker'];
       projects = ['Image Classification CNN', 'Text Summarizer Transformer'];
     } else if (detectedDomain.includes('DevOps') || detectedDomain.toLowerCase().includes('jenkins')) {
-      matchedCourseIds.add('course-devops');
-      matchedCourseIds.add('course-safe-60-devops-certification');
       detectedSkills = ['Linux administration', 'Shell scripting', preferredTech];
       skillGaps = ['Docker containerization', 'Kubernetes clustering', 'CI/CD pipeline scripts', 'System monitoring & Prometheus'];
       tools = ['Docker', 'Kubernetes', 'Jenkins', 'Prometheus'];
       projects = ['Automated Jenkins CI/CD Pipeline', 'Kubernetes Cluster Setup'];
     } else if (detectedDomain.includes('Security') || detectedDomain.toLowerCase().includes('cyber')) {
-      matchedCourseIds.add('course-cissp-certification');
       detectedSkills = ['Linux commands', 'Networking basic protocols', preferredTech];
       skillGaps = ['Network Vulnerabilities analysis', 'Access control architectures', 'Cryptographic standards', 'Risk assessment frameworks'];
       tools = ['Kali Linux', 'Wireshark', 'Metasploit'];
       projects = ['Vulnerability Pentesting Audit', 'Secure Access Control Policy'];
     } else {
-      matchedCourseIds.add('course-csm');
-      matchedCourseIds.add('course-pmp');
       detectedSkills = ['Scrum basics', 'Agile values', preferredTech];
       skillGaps = ['Agile Team coaching', 'Sprint Planning facilitation', 'Jira Board management', 'Stakeholder communications'];
       tools = ['Jira', 'Confluence', 'Trello'];
@@ -190,37 +190,244 @@ function scanLocalResume(text: string, counselorProfile: any = null): ResumeAnal
       const rx = new RegExp(`\\b${skill.name.toLowerCase().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i');
       if (rx.test(content)) {
         detectedSkills.push(skill.name);
-        skill.relatedCourses.forEach(cid => matchedCourseIds.add(cid));
       }
     });
 
     if (detectedSkills.length === 0) {
       detectedSkills.push('Analytical Skills', 'Problem Solving', 'Computer Literacy');
-      matchedCourseIds.add('course-java');
-      matchedCourseIds.add('course-frontend');
     }
 
     if (detectedSkills.includes('React') && !detectedSkills.includes('Spring Boot') && !detectedSkills.includes('Java')) {
       skillGaps.push('Java Enterprise Backend', 'Spring Boot REST APIs', 'Relational Databases (SQL)', 'Docker Containerization');
-      matchedCourseIds.add('course-java');
     } else if (detectedSkills.includes('Java') && !detectedSkills.includes('React')) {
       skillGaps.push('React Frontend Layouts', 'CSS Design Systems', 'Modern JS ES6+', 'Next.js App Routing');
-      matchedCourseIds.add('course-frontend');
     } else if (detectedSkills.includes('Python') && !detectedSkills.includes('Machine Learning')) {
       skillGaps.push('Machine Learning Algorithms', 'Deep Learning Networks (PyTorch)', 'Mathematical Statistics', 'Data Visualizations');
-      matchedCourseIds.add('course-aiml');
     } else {
       skillGaps.push('Advanced Architecture', 'Database Optimization', 'Modern Git/CI-CD workflows');
-      matchedCourseIds.add('course-aiml');
     }
     experienceLevel = content.includes('year') || content.includes('exp') ? 'Experienced' : 'Entry Level / Fresher';
-    detectedDomain = matchedCourseIds.has('course-aiml') ? 'AI & Machine Learning' : 'Software Engineering';
+
+    // Detect domain
+    if (content.includes('aws') || content.includes('cloud') || content.includes('azure') || content.includes('gcp')) {
+      detectedDomain = "Cloud Computing";
+    } else if (content.includes('machine learning') || content.includes('deep learning') || content.includes('ai') || content.includes('nlp')) {
+      detectedDomain = "AI & Machine Learning";
+    } else if (content.includes('devops') || content.includes('docker') || content.includes('kubernetes') || content.includes('jenkins')) {
+      detectedDomain = "DevOps";
+    } else if (content.includes('power bi') || content.includes('data science') || content.includes('analytics') || (content.includes('sql') && content.includes('excel'))) {
+      detectedDomain = "Data Science";
+    } else if (content.includes('cyber') || content.includes('security') || content.includes('penetration') || content.includes('vulnerability')) {
+      detectedDomain = "Cyber Security";
+    } else if (content.includes('project') || content.includes('scrum') || content.includes('agile') || content.includes('pmp') || content.includes('csm')) {
+      detectedDomain = "Project Management";
+    } else {
+      detectedDomain = "Full Stack Development";
+    }
     suggestedCareerPath = `${detectedDomain} Specialist`;
   }
 
-  const matchedCourses = Array.from(matchedCourseIds).slice(0, 3);
-  const primaryCourseId = matchedCourses[0] || 'course-java';
-  const roadmap = SUGGESTED_ROADMAPS[primaryCourseId] || SUGGESTED_ROADMAPS['course-java'];
+  // Define fallback catalog if allCourses is empty
+  const CORE_COURSES = [
+    {
+      id: "course-java",
+      name: "Java Full Stack Development",
+      slug: "java-full-stack-development",
+      categoryId: "cat-7",
+      categoryName: "Full Stack Development",
+      level: "Beginner -> Advanced",
+      syllabus: JSON.stringify([
+        { module: "Module 1: Core Java Programming" },
+        { module: "Module 2: Advanced Java & Database" },
+        { module: "Module 3: Enterprise Spring Framework" },
+        { module: "Module 4: Frontend Integration" },
+        { module: "Module 5: Testing, Security & Cloud" }
+      ])
+    },
+    {
+      id: "course-frontend",
+      name: "Frontend Development (React & Next.js)",
+      slug: "frontend-development-react-nextjs",
+      categoryId: "cat-7",
+      categoryName: "Full Stack Development",
+      level: "Beginner",
+      syllabus: JSON.stringify([
+        { module: "Module 1: UI Core & Layouts" },
+        { module: "Module 2: Modern JavaScript (ES6+)" },
+        { module: "Module 3: Deep React Foundations" },
+        { module: "Module 4: Modern Production Next.js" }
+      ])
+    },
+    {
+      id: "course-aiml",
+      name: "AI & Machine Learning Engineering",
+      slug: "ai-machine-learning-engineering",
+      categoryId: "cat-3",
+      categoryName: "AI & Machine Learning",
+      level: "Intermediate",
+      syllabus: JSON.stringify([
+        { module: "Module 1: Mathematical Foundations" },
+        { module: "Module 2: Deep Learning & Neural Networks" },
+        { module: "Module 3: Computer Vision (CV)" },
+        { module: "Module 4: Natural Language Processing (NLP)" }
+      ])
+    }
+  ];
+
+  let GENERATED_COURSES: any[] = [];
+  try {
+    GENERATED_COURSES = require('./generated_array.json');
+  } catch (err) {
+    console.warn('Could not read generated_array.json in scanLocalResume', err);
+  }
+
+  const fallbackCourses = [...CORE_COURSES, ...GENERATED_COURSES];
+  const coursesToUse = allCourses && allCourses.length > 0 ? allCourses : fallbackCourses;
+
+  // Calculate suitability score for every catalog course
+  const scoredCourses = coursesToUse.map((course: any) => {
+    let score = 50; // base score
+
+    const domainLower = detectedDomain.toLowerCase();
+    const courseCatLower = (course.categoryName || '').toLowerCase();
+    const courseNameLower = (course.name || '').toLowerCase();
+    const courseSlugLower = (course.slug || '').toLowerCase();
+
+    // Domain Match: +25
+    let domainMatch = false;
+    if (domainLower.includes(courseCatLower) || courseCatLower.includes(domainLower)) {
+      domainMatch = true;
+    } else {
+      const keywords = ['java', 'react', 'frontend', 'web', 'ai', 'machine', 'learning', 'data', 'cloud', 'aws', 'azure', 'devops', 'security', 'scrum', 'agile', 'pmp'];
+      for (const kw of keywords) {
+        if (domainLower.includes(kw) && (courseCatLower.includes(kw) || courseNameLower.includes(kw) || courseSlugLower.includes(kw))) {
+          domainMatch = true;
+          break;
+        }
+      }
+    }
+    if (domainMatch) score += 25;
+
+    // Career Goal Match: +15
+    const goalLower = (counselorProfile?.careerGoal || suggestedCareerPath).toLowerCase();
+    let goalMatch = false;
+    const goalKeywords = goalLower.split(/\s+/).filter((w: string) => w.length > 2);
+    for (const kw of goalKeywords) {
+      if (courseNameLower.includes(kw) || courseSlugLower.includes(kw)) {
+        goalMatch = true;
+        break;
+      }
+    }
+    if (goalMatch) score += 15;
+
+    // Level Match: +10
+    const expLower = experienceLevel.toLowerCase();
+    const levelLower = (course.level || '').toLowerCase();
+    let levelMatch = false;
+    if (expLower.includes('fresher') || expLower.includes('entry') || expLower.includes('beginner') || expLower.includes('student')) {
+      if (levelLower.includes('beginner')) {
+        levelMatch = true;
+      }
+    } else {
+      if (levelLower.includes('intermediate') || levelLower.includes('advanced') || levelLower.includes('professional')) {
+        levelMatch = true;
+      }
+    }
+    if (levelMatch) score += 10;
+
+    // Skill Match: +2 per skill (max +10)
+    let skillMatches = 0;
+    const courseSyllabusText = typeof course.syllabus === 'string' ? course.syllabus.toLowerCase() : JSON.stringify(course.syllabus || '').toLowerCase();
+    for (const skill of detectedSkills) {
+      const skillLow = skill.toLowerCase();
+      if (courseNameLower.includes(skillLow) || courseSlugLower.includes(skillLow) || courseSyllabusText.includes(skillLow)) {
+        skillMatches++;
+      }
+    }
+    score += Math.min(skillMatches * 2, 10);
+
+    const suitabilityScore = Math.min(score, 100);
+
+    return {
+      course,
+      suitabilityScore
+    };
+  });
+
+  // Sort courses by suitabilityScore descending
+  scoredCourses.sort((a, b) => b.suitabilityScore - a.suitabilityScore);
+
+  const bestMatchCourse = scoredCourses[0]?.course || coursesToUse[0];
+  const bestMatchScore = scoredCourses[0]?.suitabilityScore || 85;
+
+  // Expected Salary Mapping
+  let expectedSalary = "INR 5-9 LPA";
+  const bmCat = (bestMatchCourse.categoryName || '').toLowerCase();
+  const bmName = (bestMatchCourse.name || '').toLowerCase();
+  if (bmCat.includes('ai') || bmCat.includes('machine') || bmCat.includes('data') || bmName.includes('data') || bmName.includes('ai')) {
+    expectedSalary = "INR 8-15 LPA";
+  } else if (bmCat.includes('cloud') || bmCat.includes('devops') || bmName.includes('cloud') || bmName.includes('aws') || bmName.includes('devops') || bmName.includes('azure')) {
+    expectedSalary = "INR 7-14 LPA";
+  } else if (bmCat.includes('full stack') || bmCat.includes('frontend') || bmName.includes('java') || bmName.includes('frontend') || bmName.includes('web')) {
+    expectedSalary = "INR 6-12 LPA";
+  } else if (bmCat.includes('project') || bmName.includes('scrum') || bmName.includes('pmp') || bmName.includes('csm')) {
+    expectedSalary = "INR 5-10 LPA";
+  }
+
+  // Job Roles Mapping
+  let possibleJobRoles = ["Software Associate", "Technology Analyst"];
+  if (bmCat.includes('ai') || bmCat.includes('machine') || bmName.includes('ai') || bmName.includes('machine')) {
+    possibleJobRoles = ["Machine Learning Engineer", "AI Specialist", "Data Scientist", "NLP Engineer"];
+  } else if (bmCat.includes('cloud') || bmName.includes('cloud') || bmName.includes('aws') || bmName.includes('azure')) {
+    possibleJobRoles = ["Cloud Solutions Architect", "AWS Engineer", "Cloud Infrastructure Engineer"];
+  } else if (bmCat.includes('full stack') || bmCat.includes('frontend') || bmName.includes('java') || bmName.includes('frontend') || bmName.includes('web')) {
+    possibleJobRoles = ["Full Stack Developer", "Software Engineer", "Backend Developer", "React Engineer"];
+  } else if (bmCat.includes('devops') || bmName.includes('devops')) {
+    possibleJobRoles = ["DevOps Engineer", "Site Reliability Engineer", "CI/CD Automation Engineer"];
+  } else if (bmCat.includes('project') || bmName.includes('scrum') || bmName.includes('pmp') || bmName.includes('csm')) {
+    possibleJobRoles = ["Scrum Master", "Project Manager", "Agile Coach", "Delivery Manager"];
+  }
+
+  // Extract Learning Path from syllabus
+  let learningPath: string[] = [];
+  try {
+    const parsedSyllabus = typeof bestMatchCourse.syllabus === 'string' ? JSON.parse(bestMatchCourse.syllabus) : bestMatchCourse.syllabus;
+    if (Array.isArray(parsedSyllabus)) {
+      learningPath = parsedSyllabus.map((item: any) => item.module || item.title || item.details || '');
+    }
+  } catch (e) {
+    learningPath = [
+      "Module 1: Foundations & Core Principles",
+      "Module 2: Real-World Case Studies & Lab Exercises",
+      "Module 3: Enterprise Integration & Testing",
+      "Module 4: Deployment & Exam Practice Simulator"
+    ];
+  }
+  learningPath = learningPath.filter(Boolean).slice(0, 5);
+
+  const bestMatch = {
+    courseId: bestMatchCourse.id,
+    courseName: bestMatchCourse.name,
+    suitabilityScore: bestMatchScore,
+    whyRecommended: `This course perfectly aligns with your career interest in ${detectedDomain} and bridges your skill gaps in key areas like ${skillGaps.slice(0, 2).join(', ') || 'essential technical tools'}.`,
+    expectedSalary,
+    possibleJobRoles,
+    learningPath
+  };
+
+  const rankedAlternatives = scoredCourses.slice(1, 11).map((item: any) => ({
+    courseId: item.course.id,
+    courseName: item.course.name,
+    suitabilityScore: item.suitabilityScore
+  }));
+
+  const recommendedCourses = [bestMatchCourse.id, ...rankedAlternatives.slice(0, 2).map(a => a.courseId)];
+
+  const primaryCourseId = bestMatchCourse.id;
+  const roadmap = SUGGESTED_ROADMAPS[primaryCourseId] || {
+    title: `${bestMatchCourse.name} Roadmap`,
+    steps: learningPath
+  };
 
   // Roadmap Milestones
   let roadmap30: string[] = [];
@@ -240,9 +447,14 @@ function scanLocalResume(text: string, counselorProfile: any = null): ResumeAnal
     roadmap60 = ['Implement deep learning neural networks using PyTorch/TensorFlow.', 'Build object-detection convolutional models with OpenCV.'];
     roadmap90 = ['Train NLP attention transformer models and fine-tune large language models.', 'Configure MLOps package environments with Docker and AWS SageMaker.'];
   } else {
-    roadmap30 = ['Learn core cloud computing deployment styles (IaaS, PaaS, SaaS).', 'Get familiar with AWS global services (EC2, S3 buckets, RDS).'];
-    roadmap60 = ['Configure secure virtual private clouds (VPC) with subnets and security groups.', 'Develop IAM access policies and role-based login controls.'];
-    roadmap90 = ['Set up automated infrastructure deployments using Terraform or CloudFormation.', 'Conduct simulated Solutions Architect practice exams.'];
+    const step1 = learningPath[0] || 'Learn core concepts and fundamentals.';
+    const step2 = learningPath[1] || 'Hands-on practical models and assignments.';
+    const step3 = learningPath[2] || 'Advanced enterprise features and testing.';
+    const step4 = learningPath[3] || 'Deployment pipeline setup and validation.';
+    const step5 = learningPath[4] || 'Final project construction and certification.';
+    roadmap30 = [step1, step2];
+    roadmap60 = [step3];
+    roadmap90 = [step4, step5].filter(Boolean);
   }
 
   const fullReport = `# Candidate Summary
@@ -281,9 +493,9 @@ ${detectedSkills.map(s => `- ${s}`).join('\n')}
 # Final Verdict
 Highly motivated candidate. Strongly recommended to pursue upskilling certifications at Aurenza Academy to bridge skills gaps and secure premium placement references.`;
 
-  const priority1 = matchedCourses.slice(0, 1);
-  const priority2 = matchedCourses.slice(1, 2);
-  const priority3 = matchedCourses.slice(2);
+  const priority1 = [bestMatchCourse.id];
+  const priority2 = rankedAlternatives.slice(0, 2).map(a => a.courseId);
+  const priority3 = rankedAlternatives.slice(2, 4).map(a => a.courseId);
 
   const resumeScore = {
     total: 78,
@@ -326,7 +538,7 @@ Highly motivated candidate. Strongly recommended to pursue upskilling certificat
     detectedDomain,
     experienceLevel,
     suggestedCareerPath,
-    recommendedCourses: matchedCourses,
+    recommendedCourses,
     roadmap,
     roadmap30,
     roadmap60,
@@ -342,7 +554,9 @@ Highly motivated candidate. Strongly recommended to pursue upskilling certificat
       priority2,
       priority3
     },
-    learningPathPhase
+    learningPathPhase,
+    bestMatch,
+    rankedAlternatives
   };
 }
 
@@ -628,6 +842,14 @@ Maintain context memory across messages. Limit general chat answers to 130 words
 
     const hasInput = textToAnalyze.trim().length > 10 || counselorProfile;
 
+    // Fetch courses from DB catalog
+    let allCourses: any[] = [];
+    try {
+      allCourses = await db.course.findMany();
+    } catch (dbErr) {
+      console.warn('Failed to query courses from db.course.findMany()', dbErr);
+    }
+
     if (GEMINI_API_KEY && hasInput) {
       try {
         let userPrompt = '';
@@ -647,6 +869,26 @@ Please analyze this profile, identify skill gaps compared to industry expectatio
 ${textToAnalyze}`;
         }
 
+        // Format course catalog context to send to Gemini
+        const catalogContext = allCourses.map((c: any) => {
+          let syllabusModules: string[] = [];
+          try {
+            const parsed = typeof c.syllabus === 'string' ? JSON.parse(c.syllabus) : c.syllabus;
+            if (Array.isArray(parsed)) {
+              syllabusModules = parsed.map((m: any) => m.module || m.title || '');
+            }
+          } catch (e) {}
+          return {
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            categoryName: c.categoryName,
+            level: c.level,
+            duration: c.duration,
+            syllabus: syllabusModules.slice(0, 5)
+          };
+        });
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -662,14 +904,21 @@ ${textToAnalyze}`;
                   2. Resume Score (compute overall score out of 100, and category breakdowns).
                   3. ATS Compatibility Analysis (compute ATS score, identify missing keywords, weak sections, formatting issues, and suggestions).
                   4. Confidence Score (determine confidence level in analysis based on input completeness).
-                  5. Course Priority Ranking (recommend courses grouped by priority: must learn, recommended, optional).
+                  5. Course Suitability Match:
+                     - Evaluate ALL courses in our official catalog provided below against the candidate's profile.
+                     - Calculate a suitability score (0-100) for each course.
+                     - Determine the "bestMatch" (Primary Recommendation) which has the highest suitability score.
+                     - For this bestMatch course, provide a specific whyRecommended reasoning statement, an expected salary range (e.g., INR 6-12 LPA), possible target job roles, and a structured learning path (up to 5 modules from the course syllabus).
+                     - Generate a list of "rankedAlternatives" containing the next 5-10 top matching courses with their scores (sorted by score descending, excluding the bestMatch course).
                   6. Learning Path Phase Progression (Beginner → Intermediate → Advanced → Job Ready).
-                  7. Explanations (explain why skills are missing, why courses are recommended, expected salary ranges, and potential job roles).
+                  7. Explanations (explain why skills are missing, why courses are recommended).
+
+                  Official Course Catalog Context:
+                  ${JSON.stringify(catalogContext, null, 2)}
 
                   Rules:
-                  - Recommend ONLY courses from our official ID list: "course-java", "course-frontend", "course-aiml", "course-aws", "course-azure", "course-devops", "course-microsoft-power-bi", "course-dsai", "course-csm", "course-pmp".
-                  - Never hallucinate course names or recommend unavailable courses.
-                  - For each recommended course, explicitly justify the match, state expected salary ranges (e.g., INR 6-12 LPA), and target job roles (e.g., Cloud Architect).
+                  - You MUST select courses ONLY from the provided catalog. Do NOT recommend any course id or name that is not in the catalog.
+                  - For each recommended course, explicitly justify the match.
                   - Be supportive, expert, and professional.
 
                   Analyze the input and provide a JSON response matching exactly this format:
@@ -684,7 +933,7 @@ ${textToAnalyze}`;
                     "detectedDomain": "Domain Name",
                     "experienceLevel": "Entry/Mid/Senior",
                     "suggestedCareerPath": "Suggested Job Title",
-                    "recommendedCourses": ["course-java", "course-frontend"],
+                    "recommendedCourses": ["best-match-id", "alt-id-1", "alt-id-2"],
                     "improvementSuggestion": "Short upskilling/career tip",
                     "roadmap30": ["Step1", "Step2"],
                     "roadmap60": ["Step3", "Step4"],
@@ -707,11 +956,32 @@ ${textToAnalyze}`;
                     "confidenceScore": 92,
                     "confidenceReason": "Short reasoning detail",
                     "priorityCourses": {
-                      "priority1": ["course-java"],
-                      "priority2": ["course-devops"],
-                      "priority3": ["course-aws"]
+                      "priority1": ["best-match-id"],
+                      "priority2": ["alt-id-1"],
+                      "priority3": ["alt-id-2"]
                     },
                     "learningPathPhase": "Beginner → Intermediate → Advanced → Job Ready",
+                    "bestMatch": {
+                      "courseId": "best-match-id",
+                      "courseName": "Best Match Course Name",
+                      "suitabilityScore": 95,
+                      "whyRecommended": "Detailed justification why this course is perfect...",
+                      "expectedSalary": "INR 6-12 LPA",
+                      "possibleJobRoles": ["Full Stack Developer", "Software Engineer"],
+                      "learningPath": ["Module 1 info", "Module 2 info"]
+                    },
+                    "rankedAlternatives": [
+                      {
+                        "courseId": "alt-id-1",
+                        "courseName": "Alternative Course Name 1",
+                        "suitabilityScore": 88
+                      },
+                      {
+                        "courseId": "alt-id-2",
+                        "courseName": "Alternative Course Name 2",
+                        "suitabilityScore": 82
+                      }
+                    ],
                     "fullReport": "A detailed report in markdown formatting following EXACTLY this structure:\n\n# Candidate Summary\n\n# Resume Score\n\nOverall Score: XX/100\n\n# Skills Identified\n\n# Strengths\n\n# Weaknesses\n\n# ATS Analysis\n\n# Job Match Recommendations\n\n# Skill Gap Analysis\n\n# Recommended Certifications\n\n# Recommended Learning Path\n\n# Interview Questions\n\n# Final Verdict"
                   }
                   
@@ -729,8 +999,26 @@ ${textToAnalyze}`;
         const result = (await response.json()) as any;
         const parsed = JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
         if (parsed) {
-          const primaryCourseId = parsed.recommendedCourses[0] || 'course-java';
-          const roadmap = SUGGESTED_ROADMAPS[primaryCourseId] || SUGGESTED_ROADMAPS['course-java'];
+          const primaryCourseId = parsed.bestMatch?.courseId || parsed.recommendedCourses?.[0] || 'course-java';
+          
+          // Find the actual course from allCourses to get dynamic roadmap steps if needed
+          const matchedDbCourse = allCourses.find((c: any) => c.id === primaryCourseId);
+          let dynamicSteps: string[] = [];
+          if (matchedDbCourse) {
+            try {
+              const parsedSyllabus = typeof matchedDbCourse.syllabus === 'string' ? JSON.parse(matchedDbCourse.syllabus) : matchedDbCourse.syllabus;
+              if (Array.isArray(parsedSyllabus)) {
+                dynamicSteps = parsedSyllabus.map((item: any) => item.module || item.title || item.details || '');
+              }
+            } catch (e) {}
+          }
+          
+          const defaultRoadmap = SUGGESTED_ROADMAPS[primaryCourseId] || SUGGESTED_ROADMAPS['course-java'];
+          const roadmap = {
+            title: defaultRoadmap?.title || (matchedDbCourse?.name ? `${matchedDbCourse.name} Roadmap` : 'Custom Career Roadmap'),
+            steps: defaultRoadmap?.steps || dynamicSteps.filter(Boolean).slice(0, 5)
+          };
+
           return {
             ...parsed,
             roadmap
@@ -742,6 +1030,6 @@ ${textToAnalyze}`;
     }
 
     // Fallback to local scanner
-    return scanLocalResume(textToAnalyze, counselorProfile);
+    return scanLocalResume(textToAnalyze, counselorProfile, allCourses);
   }
 };

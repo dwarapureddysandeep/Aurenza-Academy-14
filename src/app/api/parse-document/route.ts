@@ -92,12 +92,14 @@ export async function POST(request: NextRequest) {
     } else if (fileExtension === '.pdf') {
       // PDF Parsing
       try {
-        const pdfParse = require('pdf-parse');
-        const pdfData = await pdfParse(buffer);
+        const { PDFParse } = require('pdf-parse');
+        const parser = new PDFParse({ data: buffer });
+        const pdfData = await parser.getText();
+        await parser.destroy();
         extractedText = pdfData.text || '';
       } catch (err: any) {
         console.error('PDF parsing error:', err);
-        return NextResponse.json({ error: 'Failed to parse PDF document content' }, { status: 500 });
+        return NextResponse.json({ error: 'Unable to extract text from this PDF. Please try another file or paste your resume manually.' }, { status: 400 });
       }
     } else if (fileExtension === '.docx') {
       // Word DOCX Parsing
