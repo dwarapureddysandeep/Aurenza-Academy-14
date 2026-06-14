@@ -199,13 +199,18 @@ export const aiService = {
   /**
    * Generates Chatbot responses using Gemini or offline fallbacks.
    */
-  getChatResponse: async (messageText: string): Promise<ChatResponse> => {
+  getChatResponse: async (
+    messageText: string,
+    chatHistory: { role: 'user' | 'model'; text: string }[] = [],
+    documentContext: string = ''
+  ): Promise<ChatResponse> => {
     const msg = messageText.toLowerCase();
 
+    // 1. Quick Keyword Handler (Offline/Online immediate responses)
     if (msg.includes('resume') || msg.includes('cv') || msg.includes('upload') || msg.includes('parse')) {
       return {
-        text: "I would be happy to analyze your resume! Please paste your resume text in the chat input or upload your resume file (PDF, DOCX, TXT) to get a complete skill-gap breakdown.",
-        quickActions: ['Analyze Resume', 'Recommend Courses']
+        text: "I would be happy to analyze your resume! Click the attachment icon in the input bar or paste your resume details into the 'Resume Diagnostics AI' tab to get a full analysis.",
+        quickActions: ['Recommend Courses']
       };
     }
 
@@ -218,75 +223,198 @@ export const aiService = {
 
     if (msg.includes('fee') || msg.includes('price') || msg.includes('cost') || msg.includes('payment') || msg.includes('tuition')) {
       return {
-        text: "Aurenza Academy has transitioned into a premium course showcase and career catalog platform! We do not collect upfront online tuition payments or processing charges. Dynamic course schedules, learning material distributions, and customized workforce packages are managed directly via our counselors. Let me know if you would like to book a free counseling call!",
+        text: "Aurenza Academy operates as a premium course catalog and showcase. We do not process upfront online tuition payments or admission fees. Specific course schedules, materials, and corporate learning packages are coordinated directly via counselor callbacks. Let me know if you would like to schedule a free counseling call!",
         quickActions: ['Book Free Counseling', 'Explore Courses']
       };
     }
 
     if (msg.includes('placement') || msg.includes('job') || msg.includes('hire') || msg.includes('salary') || msg.includes('career support') || msg.includes('interview')) {
       return {
-        text: "Aurenza offers premier placement preparation programs! This includes dedicated mock interviews with technology specialists, resume polishing, ATS optimization, and direct counselor referrals to our 500+ corporate hiring partners. We have successfully placed candidates at companies like Microsoft, Amazon, and Deloitte.",
-        quickActions: ['Analyze Resume', 'Book Free Counseling']
+        text: "Aurenza provides premier placement preparation! We offer dedicated mock interviews with technology specialists, resume polishing, ATS optimization, and direct counselor referrals to our 500+ corporate hiring partners. We have successfully placed candidates at companies like Microsoft, Amazon, and Deloitte.",
+        quickActions: ['Book Free Counseling']
       };
     }
 
     if (msg.includes('contact') || msg.includes('phone') || msg.includes('hotline') || msg.includes('call') || msg.includes('email') || msg.includes('support') || msg.includes('address') || msg.includes('office') || msg.includes('location')) {
       return {
-        text: "You can connect with Aurenza Academy advisors through multiple support channels:\n\n- 📞 **Hotline**: +91 70130 57827\n- ✉️ **Support Email**: info@aurenzaacademy.com\n- 📍 **Head Office**: Gajuwaka, Visakhapatnam, India\n\nFeel free to write to us or register for an inbound callback!",
+        text: "You can reach Aurenza Academy advisors through these official channels:\n\n- 📞 **Hotline**: +91 70130 57827\n- ✉️ **Support Email**: info@aurenzaacademy.com\n- 📍 **Head Office**: Gajuwaka, Visakhapatnam, India\n\nFeel free to write to us or request an inbound callback!",
         quickActions: ['Book Free Counseling', 'Explore Courses']
       };
     }
 
+    // 2. Gemini Live API Pathway with context and memory
     if (GEMINI_API_KEY) {
       try {
+        const contents: any[] = [];
+        
+        // Populate chat history turns
+        if (chatHistory && chatHistory.length > 0) {
+          chatHistory.forEach(turn => {
+            contents.push({
+              role: turn.role === 'user' ? 'user' : 'model',
+              parts: [{ text: turn.text }]
+            });
+          });
+        }
+
+        // Construct final prompt with document context
+        let currentPrompt = "";
+        if (documentContext) {
+          currentPrompt += `[CONTEXT FROM ATTACHED DOCUMENTS:
+${documentContext}
+]
+
+`;
+        }
+        currentPrompt += `User Query: ${messageText}`;
+
+        contents.push({
+          role: 'user',
+          parts: [{ text: currentPrompt }]
+        });
+
+        const systemInstruction = {
+          parts: [{
+            text: `You are Auri, the senior AI Career Counselor for Aurenza Academy.
+            
+Primary Business Details:
+- Location: Gajuwaka, Visakhapatnam, India.
+- Email Support: info@aurenzaacademy.com
+- Hotline Support: +91 70130 57827
+- Pricing: Showcase/catalog mode. We do not collect online payments or upfront tuitions. Counseling calls are free.
+- Placements: 1-on-1 counselor reviews, resume building, ATS alignment, and mock interviews with tech leads.
+
+Course Recommendation Engine Rules:
+Analyze user queries, career goals, experience level, and any attached document text (like resumes) to match them with our official catalog courses:
+- AWS queries -> AWS Solutions Architect (course-aws) or AWS Solutions Architect Associate Certification (course-aws-solutions-architect-associate-certification)
+- Java queries -> Java Full Stack Development (course-java)
+- Data Analyst / Business Intelligence / SQL -> Microsoft Power BI (course-microsoft-power-bi) or Data Science & AI Bootcamp (course-dsai)
+- DevOps queries -> DevOps Engineer Program (course-devops) or SAFe 6.0 DevOps Certification (course-safe-60-devops-certification)
+- Freshers / Beginners -> Frontend Development (React & Next.js) (course-frontend) or Certified ScrumMaster (CSM) (course-csm)
+- Project Management -> PMP Certification (course-pmp) or CAPM Certification (course-capm-certification)
+
+Each recommendation MUST be formatted exactly as follows:
+### Recommended Program: [Official Course Name] (ID: [course-id])
+* **Why Recommended**: [Clear reason matching user's query, goals, and skills]
+* **Skill Level**: [Beginner / Intermediate / Advanced]
+* **Expected Outcomes**: [Outcome 1, Outcome 2, etc.]
+* **Related Courses**: [Related Course Name (ID: related-course-id)]
+* **Learning Path Sequence**:
+  1. [Module 1]
+  2. [Module 2]
+  3. [Module 3]
+
+Maintain context memory across messages. Limit general chat answers to 130 words. Output in markdown.`
+          }]
+        };
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [
-              {
-                role: 'user',
-                parts: [{ text: `You are Auri, the premium AI Career Counselor for Aurenza Academy.
-                
-                Aurenza Academy Business Rules:
-                1. Location: Gajuwaka, Visakhapatnam, India.
-                2. Contact Email: info@aurenzaacademy.com
-                3. Hotline Phone: +91 70130 57827
-                4. Fees & Pricing: Aurenza Academy functions as a premium course catalog and showcase. We do not collect upfront online tuition or payments; fees are handled through counselor coaching plans or corporate packages.
-                5. Placements: We offer 1-on-1 placement referrals, resume reviews, ATS optimization, and mock sessions with corporate managers to refer learners to our 500+ hiring partners.
-                6. Core Courses: Java Full Stack Development, Frontend React/Next.js, AI & Machine Learning Engineering, AWS Cloud, DevOps, and Data Science.
-                
-                Be extremely motivating, supportive, professional, and guide suggestions to our courses. If the user asks you to analyze their resume or screen it, perform a detailed review and return a report following the requested format:
-                # Candidate Summary
-                # Resume Score
-                Overall Score: XX/100
-                # Skills Identified
-                # Strengths
-                # Weaknesses
-                # ATS Analysis
-                # Job Match Recommendations
-                # Skill Gap Analysis
-                # Recommended Certifications
-                # Recommended Learning Path
-                # Interview Questions
-                # Final Verdict
-                
-                For other general questions, keep responses under 130 words. Message: ${messageText}` }]
-              }
-            ]
+            contents,
+            systemInstruction
           })
         });
+
         const result = await response.json();
         const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (generatedText) {
           return { text: generatedText.trim() };
         }
       } catch (e) {
-        console.warn('Gemini API call failed, using high-quality local NLP response instead', e);
+        console.warn('Gemini chatbot call failed, defaulting to local NLP analyzer', e);
       }
     }
 
-    // Local Interactive Responses
+    // 3. Offline Local Keyword Recommendation Parser
+    // AWS Cloud
+    if (msg.includes('aws') || msg.includes('cloud') || msg.includes('azure')) {
+      const isAzure = msg.includes('azure');
+      const courseName = isAzure ? "Microsoft Azure Administrator" : "AWS Solutions Architect";
+      const courseId = isAzure ? "course-azure" : "course-aws";
+      return {
+        text: `### Recommended Program: ${courseName} (ID: ${courseId})
+* **Why Recommended**: You mentioned cloud computing. Certified cloud professionals are highly sought after for scaling infrastructure.
+* **Skill Level**: Intermediate
+* **Expected Outcomes**: Master VPC design, IAM security roles, load balancing, serverless setups, and compute instances.
+* **Related Courses**: DevOps Engineer Program (ID: course-devops)
+* **Learning Path Sequence**:
+  1. Cloud Foundations & Core Services
+  2. Advanced Cloud Architecture & Storage
+  3. Security, Monitoring & Migration Blueprints`,
+        quickActions: ['Book Free Counseling', 'Explore Courses']
+      };
+    }
+
+    // Java
+    if (msg.includes('java') || msg.includes('spring') || msg.includes('backend')) {
+      return {
+        text: `### Recommended Program: Java Full Stack Development (ID: course-java)
+* **Why Recommended**: You showed interest in backend development. Java & Spring Boot form the backbone of corporate enterprise web systems.
+* **Skill Level**: Beginner -> Advanced
+* **Expected Outcomes**: Build relational database queries (SQL/Hibernate), develop REST APIs (Spring Boot), and integrate React.js frontends.
+* **Related Courses**: Frontend Development (React & Next.js) (ID: course-frontend)
+* **Learning Path Sequence**:
+  1. Core Java OOP Foundations
+  2. Relational Databases & ORM Hibernate
+  3. Spring Boot Rest APIs & Microservices`,
+        quickActions: ['Book Free Counseling', 'Explore Courses']
+      };
+    }
+
+    // DevOps
+    if (msg.includes('devops') || msg.includes('docker') || msg.includes('kubernetes') || msg.includes('ci')) {
+      return {
+        text: `### Recommended Program: DevOps Engineer Program (ID: course-devops)
+* **Why Recommended**: You inquired about DevOps automation. Bridging development and operations is crucial for modern agile deployment cycles.
+* **Skill Level**: Intermediate
+* **Expected Outcomes**: Program CI/CD automation pipelines, package containerized apps (Docker/Kubernetes), and configure infrastructure as code.
+* **Related Courses**: AWS Solutions Architect (ID: course-aws)
+* **Learning Path Sequence**:
+  1. Version Control & Git Workflows
+  2. Containers & Microservices (Docker & Kubernetes)
+  3. Continuous Integration Pipelines & Automated Testing`,
+        quickActions: ['Book Free Counseling', 'Explore Courses']
+      };
+    }
+
+    // Data / Power BI
+    if (msg.includes('data') || msg.includes('power bi') || msg.includes('analyst') || msg.includes('sql') || msg.includes('python')) {
+      const isBI = msg.includes('power bi') || msg.includes('bi');
+      const courseName = isBI ? "Microsoft Power BI" : "Data Science & AI Bootcamp";
+      const courseId = isBI ? "course-microsoft-power-bi" : "course-dsai";
+      return {
+        text: `### Recommended Program: ${courseName} (ID: ${courseId})
+* **Why Recommended**: You showed interest in data processing. Modern businesses rely heavily on data visualizations and modeling to drive decisions.
+* **Skill Level**: Intermediate -> Advanced
+* **Expected Outcomes**: Write data analytics algorithms (Python/Pandas), manage SQL databases, and build interactive executive dashboards.
+* **Related Courses**: AI & Machine Learning Engineering (ID: course-aiml)
+* **Learning Path Sequence**:
+  1. SQL Foundations & Data Aggregations
+  2. Python/DAX Analytical Formulas
+  3. Business Intelligence Visualizations & Reports`,
+        quickActions: ['Book Free Counseling', 'Explore Courses']
+      };
+    }
+
+    // Freshers / Beginners
+    if (msg.includes('fresher') || msg.includes('student') || msg.includes('beginner') || msg.includes('javascript') || msg.includes('react') || msg.includes('html')) {
+      return {
+        text: `### Recommended Program: Frontend Development (React & Next.js) (ID: course-frontend)
+* **Why Recommended**: Perfect starting program for beginners. Interactive web development provides rapid visual feedback and solid JS fundamentals.
+* **Skill Level**: Beginner
+* **Expected Outcomes**: Build semantic responsive UI layouts (HTML/CSS/Tailwind), control page state in React, and deploy Next.js apps to production.
+* **Related Courses**: Java Full Stack Development (ID: course-java)
+* **Learning Path Sequence**:
+  1. Responsive Styling & Tailwind Layouts
+  2. JavaScript ES6+ & Asynchronous Fetch API
+  3. React Hooks, Routing, and Next.js Pages`,
+        quickActions: ['Book Free Counseling', 'Explore Courses']
+      };
+    }
+
+    // Default Fallback
     if (msg === 'student') {
       return {
         text: "Fabulous! As a student, are you looking to build your core technical skills in software engineering (Full Stack / Frontend) or venture into high-growth AI & Machine Learning fields?",
@@ -329,6 +457,7 @@ export const aiService = {
       quickActions: ['Recommend Courses', 'Analyze Resume', 'Career Roadmap', 'Book Free Counseling']
     };
   },
+
 
   /**
    * Analyzes resume text or file names

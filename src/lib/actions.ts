@@ -518,9 +518,13 @@ export async function getCertificateByIdAction(certId: string) {
 
 import { aiService } from './ai';
 
-export async function getAIChatResponseAction(message: string) {
+export async function getAIChatResponseAction(
+  message: string,
+  chatHistory: { role: 'user' | 'model'; text: string }[] = [],
+  documentContext: string = ''
+) {
   try {
-    return await aiService.getChatResponse(message);
+    return await aiService.getChatResponse(message, chatHistory, documentContext);
   } catch (err: any) {
     return { text: "I'm sorry, I encountered an issue parsing your query. Please try again." };
   }
