@@ -193,7 +193,7 @@ export default async function HomePage() {
                   <p className="text-xs text-textSecondary mt-1 leading-relaxed">{web.description}</p>
                 </div>
 
-                <div className="pt-3 border-t border-borderLight grid grid-cols-2 gap-3 text-xs text-textSecondary">
+                <div className="pt-3 border-t border-borderLight grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-textSecondary">
                   <div>
                     <span className="text-[9px] text-neutral-400 font-bold uppercase block tracking-wider">Corporate Speaker</span>
                     <strong className="text-textPrimary mt-0.5 block">{web.speaker}</strong>

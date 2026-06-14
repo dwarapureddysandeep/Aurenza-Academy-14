@@ -33,7 +33,7 @@ export default function AboutPage() {
         <div className="grid gap-8 sm:grid-cols-2">
           
           <div className="bg-white border border-[#ECECF4] p-6 sm:p-8 space-y-4 rounded-[8px] shadow-soft hover:shadow-premium transition-all duration-300">
-            <div className="p-3 w-fit rounded-lg bg-red-50 text-primary border border-red-100">
+            <div className="p-3 w-fit rounded-lg bg-primary/5 text-primary border border-primary/10">
               <Target className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-black text-[#0C182F] heading">Our Global Mission</h3>

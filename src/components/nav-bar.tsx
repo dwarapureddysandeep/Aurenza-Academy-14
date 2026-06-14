@@ -98,6 +98,7 @@ export default function NavBar({ currentUser }: { currentUser?: any }) {
     if (searchQuery.trim()) {
       router.push(`/courses?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
+      setMobileOpen(false);
     }
   };
 

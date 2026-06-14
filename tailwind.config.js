@@ -11,6 +11,7 @@ module.exports = {
         // Aurenza Academy Brand Colors
         primary: "#7A008C",       // Aurenza Purple
         primaryHover: "#5C006A",  // Darker Purple
+        secondary: "#E85AD9",     // Aurenza Pink
         accent: "#E85AD9",        // Aurenza Pink
         enterpriseBg: "#FFFFFF",  // White background
         sectionBg: "#FAFAFC",     // Section Background
