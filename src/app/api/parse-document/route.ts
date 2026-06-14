@@ -75,6 +75,20 @@ export async function POST(request: NextRequest) {
 
     if (fileExtension === '.txt') {
       extractedText = buffer.toString('utf8');
+    } else if (fileExtension === '.rtf') {
+      try {
+        const rtfText = buffer.toString('utf8');
+        const cleanRtfText = rtfText
+          .replace(/\\'[0-9a-f]{2}/g, '')
+          .replace(/\\[a-z0-9\-]+ ?/gi, '')
+          .replace(/[\{\}]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        extractedText = cleanRtfText;
+      } catch (err: any) {
+        console.error('RTF parsing error:', err);
+        return NextResponse.json({ error: 'Failed to parse RTF document content' }, { status: 500 });
+      }
     } else if (fileExtension === '.pdf') {
       // PDF Parsing
       try {
@@ -140,7 +154,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to parse legacy document binary structure' }, { status: 500 });
       }
     } else {
-      return NextResponse.json({ error: `Unsupported file format: ${fileExtension}. Supported formats: .pdf, .docx, .doc, .txt, .pptx, .ppt` }, { status: 400 });
+      return NextResponse.json({ error: `Unsupported file format: ${fileExtension}. Supported formats: .pdf, .docx, .doc, .txt, .pptx, .ppt, .rtf` }, { status: 400 });
     }
 
     // Sanitize extracted text

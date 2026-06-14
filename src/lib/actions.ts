@@ -530,11 +530,13 @@ export async function getAIChatResponseAction(
   }
 }
 
-export async function analyzeResumeAction(resumeText: string, fileName: string = '') {
+export async function analyzeResumeAction(resumeText: string, fileName: string = '', counselorProfile: any = null) {
   try {
-    return await aiService.analyzeResume(resumeText, fileName);
+    return await aiService.analyzeResume(resumeText, fileName, counselorProfile);
   } catch (err: any) {
     return {
+      name: "Fallback Candidate",
+      education: "Technical Graduate",
       detectedSkills: ["Analytical Skills"],
       skillGaps: ["Advanced Framework Architecture"],
       detectedDomain: "Software Engineering",
@@ -545,7 +547,10 @@ export async function analyzeResumeAction(resumeText: string, fileName: string =
       roadmap: {
         title: "Software Engineering Path",
         steps: ["Introduction", "Full Stack Development", "Deployment"]
-      }
+      },
+      roadmap30: ["Review Core Java fundamentals"],
+      roadmap60: ["Develop Spring Boot Rest APIs"],
+      roadmap90: ["Build and deploy full stack applications"]
     };
   }
 }

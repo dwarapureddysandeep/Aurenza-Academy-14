@@ -8,6 +8,11 @@ interface Roadmap {
 }
 
 export interface ResumeAnalysis {
+  name?: string;
+  education?: string;
+  certifications?: string[];
+  projects?: string[];
+  tools?: string[];
   detectedSkills: string[];
   skillGaps: string[];
   detectedDomain: string;
@@ -16,6 +21,9 @@ export interface ResumeAnalysis {
   recommendedCourses: string[]; // Course IDs
   improvementSuggestion: string;
   roadmap: Roadmap;
+  roadmap30: string[];
+  roadmap60: string[];
+  roadmap90: string[];
   fullReport?: string;
 }
 
@@ -80,116 +88,192 @@ const SUGGESTED_ROADMAPS: Record<string, Roadmap> = {
 };
 
 /**
- * Perform keyword-based local skill & gap scanner
+ * Perform keyword-based local skill & gap scanner or counselor profile mapping
  */
-function scanLocalResume(text: string): ResumeAnalysis {
+function scanLocalResume(text: string, counselorProfile: any = null): ResumeAnalysis {
   const content = text.toLowerCase();
-  const detectedSkills: string[] = [];
-  const skillGaps: string[] = [];
-  const matchedCourseIds = new Set<string>();
+  let detectedSkills: string[] = [];
+  let skillGaps: string[] = [];
+  let matchedCourseIds = new Set<string>();
+  let name = "Extracted Candidate";
+  let education = "Technical Degree (Extracted)";
+  let certifications = ["Aurenza Certified Foundation"];
+  let projects = ["Full Stack Integration Portfolio"];
+  let tools = ["Git", "GitHub"];
+  let detectedDomain = "Software Engineering";
+  let experienceLevel = "Entry Level / Fresher";
+  let suggestedCareerPath = "Software Engineer Specialist";
 
-  // 1. Detect skills based on keywords
-  SKILLS_DATABASE.forEach(skill => {
-    const rx = new RegExp(`\\b${skill.name.toLowerCase().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i');
-    if (rx.test(content)) {
-      detectedSkills.push(skill.name);
-      skill.relatedCourses.forEach(cid => matchedCourseIds.add(cid));
+  if (counselorProfile) {
+    name = counselorProfile.name || "Candidate";
+    education = counselorProfile.education || "Graduate";
+    experienceLevel = counselorProfile.experienceLevel || "Entry Level / Fresher";
+    detectedDomain = counselorProfile.interestedDomain || "Full Stack Development";
+    suggestedCareerPath = counselorProfile.careerGoal || `${detectedDomain} Engineer`;
+    const preferredTech = counselorProfile.preferredTech || "Modern Stacks";
+
+    if (detectedDomain.includes('Cloud') || detectedDomain.toLowerCase().includes('aws') || detectedDomain.toLowerCase().includes('azure')) {
+      matchedCourseIds.add('course-aws');
+      matchedCourseIds.add('course-azure');
+      detectedSkills = ['Cloud Basics', 'Infrastructure Concepts', preferredTech];
+      skillGaps = ['VPC Networking', 'IAM Security Policies', 'EC2 & S3 Compute/Storage', 'AWS CloudFormation'];
+      tools = ['AWS Management Console', 'Terraform', 'Git'];
+      projects = ['Multi-tier AWS Web Deployment', 'Secure Cloud Architecture'];
+    } else if (detectedDomain.includes('Full Stack') || detectedDomain.includes('Frontend') || detectedDomain.toLowerCase().includes('web') || detectedDomain.toLowerCase().includes('react') || detectedDomain.toLowerCase().includes('java')) {
+      matchedCourseIds.add('course-java');
+      matchedCourseIds.add('course-frontend');
+      detectedSkills = ['HTML/CSS Basics', 'JavaScript ES6', preferredTech];
+      skillGaps = ['Spring Boot Framework', 'RESTful Microservices APIs', 'Hibernate ORM', 'Relational SQL Databases'];
+      tools = ['VS Code', 'IntelliJ IDEA', 'Postman', 'Git'];
+      projects = ['Spring Boot & React CRUD Portal', 'E-commerce API Gateway'];
+    } else if (detectedDomain.includes('Data') || detectedDomain.toLowerCase().includes('analytics') || detectedDomain.toLowerCase().includes('bi')) {
+      matchedCourseIds.add('course-microsoft-power-bi');
+      matchedCourseIds.add('course-dsai');
+      detectedSkills = ['Spreadsheets', 'Data Cleaning', preferredTech];
+      skillGaps = ['Advanced SQL Queries', 'Power BI Data Modeling', 'Excel Analytics formulas', 'Python Data Science libraries'];
+      tools = ['Power BI Desktop', 'Jupyter Notebooks', 'Excel'];
+      projects = ['Executive Sales Dashboard', 'Customer Churn Analysis'];
+    } else if (detectedDomain.includes('AI') || detectedDomain.includes('Machine') || detectedDomain.toLowerCase().includes('learning') || detectedDomain.toLowerCase().includes('deep')) {
+      matchedCourseIds.add('course-aiml');
+      matchedCourseIds.add('course-dsai');
+      detectedSkills = ['Python programming', 'Mathematical optimization', preferredTech];
+      skillGaps = ['Deep Neural Networks', 'PyTorch / TensorFlow coding', 'NLP Transformer architectures', 'MLOps models pipelines'];
+      tools = ['PyTorch', 'TensorFlow', 'Google Colab', 'Docker'];
+      projects = ['Image Classification CNN', 'Text Summarizer Transformer'];
+    } else if (detectedDomain.includes('DevOps') || detectedDomain.toLowerCase().includes('jenkins')) {
+      matchedCourseIds.add('course-devops');
+      matchedCourseIds.add('course-safe-60-devops-certification');
+      detectedSkills = ['Linux administration', 'Shell scripting', preferredTech];
+      skillGaps = ['Docker containerization', 'Kubernetes clustering', 'CI/CD pipeline scripts', 'System monitoring & Prometheus'];
+      tools = ['Docker', 'Kubernetes', 'Jenkins', 'Prometheus'];
+      projects = ['Automated Jenkins CI/CD Pipeline', 'Kubernetes Cluster Setup'];
+    } else if (detectedDomain.includes('Security') || detectedDomain.toLowerCase().includes('cyber')) {
+      matchedCourseIds.add('course-cissp-certification');
+      detectedSkills = ['Linux commands', 'Networking basic protocols', preferredTech];
+      skillGaps = ['Network Vulnerabilities analysis', 'Access control architectures', 'Cryptographic standards', 'Risk assessment frameworks'];
+      tools = ['Kali Linux', 'Wireshark', 'Metasploit'];
+      projects = ['Vulnerability Pentesting Audit', 'Secure Access Control Policy'];
+    } else {
+      matchedCourseIds.add('course-csm');
+      matchedCourseIds.add('course-pmp');
+      detectedSkills = ['Scrum basics', 'Agile values', preferredTech];
+      skillGaps = ['Agile Team coaching', 'Sprint Planning facilitation', 'Jira Board management', 'Stakeholder communications'];
+      tools = ['Jira', 'Confluence', 'Trello'];
+      projects = ['Agile Transformation Roadmap', 'Scrum Sprint Facilitations'];
     }
-  });
-
-  // 2. Default fallback if no skills detected
-  if (detectedSkills.length === 0) {
-    detectedSkills.push('Analytical Skills', 'Problem Solving', 'Computer Literacy');
-    matchedCourseIds.add('course-java');
-    matchedCourseIds.add('course-frontend');
-  }
-
-  // 3. Identify skill gaps based on detected ones
-  if (detectedSkills.includes('React') && !detectedSkills.includes('Spring Boot') && !detectedSkills.includes('Java')) {
-    skillGaps.push('Java Enterprise Backend', 'Spring Boot REST APIs', 'Relational Databases (SQL)', 'Docker Containerization');
-    matchedCourseIds.add('course-java');
-  } else if (detectedSkills.includes('Java') && !detectedSkills.includes('React')) {
-    skillGaps.push('React Frontend Layouts', 'CSS Design Systems', 'Modern JS ES6+', 'Next.js App Routing');
-    matchedCourseIds.add('course-frontend');
-  } else if (detectedSkills.includes('Python') && !detectedSkills.includes('Machine Learning')) {
-    skillGaps.push('Machine Learning Algorithms', 'Deep Learning Networks (PyTorch)', 'Mathematical Statistics', 'Data Visualizations');
-    matchedCourseIds.add('course-aiml');
   } else {
-    skillGaps.push('Advanced Architecture', 'Database Optimization', 'Modern Git/CI-CD workflows');
-    matchedCourseIds.add('course-aiml');
+    // Scan text using keywords
+    SKILLS_DATABASE.forEach(skill => {
+      const rx = new RegExp(`\\b${skill.name.toLowerCase().replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i');
+      if (rx.test(content)) {
+        detectedSkills.push(skill.name);
+        skill.relatedCourses.forEach(cid => matchedCourseIds.add(cid));
+      }
+    });
+
+    if (detectedSkills.length === 0) {
+      detectedSkills.push('Analytical Skills', 'Problem Solving', 'Computer Literacy');
+      matchedCourseIds.add('course-java');
+      matchedCourseIds.add('course-frontend');
+    }
+
+    if (detectedSkills.includes('React') && !detectedSkills.includes('Spring Boot') && !detectedSkills.includes('Java')) {
+      skillGaps.push('Java Enterprise Backend', 'Spring Boot REST APIs', 'Relational Databases (SQL)', 'Docker Containerization');
+      matchedCourseIds.add('course-java');
+    } else if (detectedSkills.includes('Java') && !detectedSkills.includes('React')) {
+      skillGaps.push('React Frontend Layouts', 'CSS Design Systems', 'Modern JS ES6+', 'Next.js App Routing');
+      matchedCourseIds.add('course-frontend');
+    } else if (detectedSkills.includes('Python') && !detectedSkills.includes('Machine Learning')) {
+      skillGaps.push('Machine Learning Algorithms', 'Deep Learning Networks (PyTorch)', 'Mathematical Statistics', 'Data Visualizations');
+      matchedCourseIds.add('course-aiml');
+    } else {
+      skillGaps.push('Advanced Architecture', 'Database Optimization', 'Modern Git/CI-CD workflows');
+      matchedCourseIds.add('course-aiml');
+    }
+    experienceLevel = content.includes('year') || content.includes('exp') ? 'Experienced' : 'Entry Level / Fresher';
+    detectedDomain = matchedCourseIds.has('course-aiml') ? 'AI & Machine Learning' : 'Software Engineering';
+    suggestedCareerPath = `${detectedDomain} Specialist`;
   }
 
   const matchedCourses = Array.from(matchedCourseIds).slice(0, 3);
   const primaryCourseId = matchedCourses[0] || 'course-java';
   const roadmap = SUGGESTED_ROADMAPS[primaryCourseId] || SUGGESTED_ROADMAPS['course-java'];
 
-  const detectedDomain = matchedCourses.includes('course-aiml')
-    ? 'Data Science & Artificial Intelligence'
-    : 'Software & Full Stack Web Engineering';
+  // Roadmap Milestones
+  let roadmap30: string[] = [];
+  let roadmap60: string[] = [];
+  let roadmap90: string[] = [];
+
+  if (primaryCourseId === 'course-java') {
+    roadmap30 = ['Review Core Java OOP principles, encapsulation, and memory models.', 'Understand relational database schemas and basic SQL query structures.'];
+    roadmap60 = ['Develop enterprise backend microservices with Spring Boot APIs.', 'Learn modern JavaScript ES6+ syntax and basic React routing.'];
+    roadmap90 = ['Build a full stack React and Spring Boot integration application.', 'Setup JUnit test cases, configure Spring Security, and deploy on AWS.'];
+  } else if (primaryCourseId === 'course-frontend') {
+    roadmap30 = ['Master HTML5 semantic elements and responsive layouts (CSS Flexbox/Grid).', 'Integrate utility-first styling frameworks like Tailwind CSS.'];
+    roadmap60 = ['Learn JavaScript ES6+ asynchronous programming (Promises/Fetch API).', 'Control application state with React Hooks and Context APIs.'];
+    roadmap90 = ['Learn Next.js App Routing architecture and Server Actions.', 'Optimize SEO tags, configure meta headers, and deploy to Vercel.'];
+  } else if (primaryCourseId === 'course-aiml' || primaryCourseId === 'course-dsai') {
+    roadmap30 = ['Review python data processing libraries (Numpy, Pandas, Matplotlib).', 'Learn basic statistical models and gradient descent calculus optimization.'];
+    roadmap60 = ['Implement deep learning neural networks using PyTorch/TensorFlow.', 'Build object-detection convolutional models with OpenCV.'];
+    roadmap90 = ['Train NLP attention transformer models and fine-tune large language models.', 'Configure MLOps package environments with Docker and AWS SageMaker.'];
+  } else {
+    roadmap30 = ['Learn core cloud computing deployment styles (IaaS, PaaS, SaaS).', 'Get familiar with AWS global services (EC2, S3 buckets, RDS).'];
+    roadmap60 = ['Configure secure virtual private clouds (VPC) with subnets and security groups.', 'Develop IAM access policies and role-based login controls.'];
+    roadmap90 = ['Set up automated infrastructure deployments using Terraform or CloudFormation.', 'Conduct simulated Solutions Architect practice exams.'];
+  }
 
   const fullReport = `# Candidate Summary
 - **Profile Status**: Local scan completed.
-- **Skills Detected**: ${detectedSkills.join(', ')}
-- **Domain Focus**: ${detectedDomain}
-- **Experience Level**: ${content.includes('year') || content.includes('exp') ? 'Mid Level' : 'Entry Level / Fresher'}
+- **Candidate Name**: ${name}
+- **Target Domain**: ${detectedDomain}
+- **Experience Level**: ${experienceLevel}
+- **Academic Background**: ${education}
 
 # Resume Score
-Overall Score: 78/100
-- Technical Skills: 75/100
-- Communication & Presentation: 80/100
-- Experience: 70/100
-- Project Quality: 85/100
-- Education: 80/100
-- ATS Compatibility: 80/100
-- Employability Score: 82/100
+Overall Score: 80/100
+- Technical Skills: 78/100
+- ATS Compatibility: 82/100
+- Employability Rating: 80/100
 
 # Skills Identified
 ${detectedSkills.map(s => `- ${s}`).join('\n')}
 
 # Strengths
-- Solid foundation in ${detectedSkills[0] || 'software development'} principles.
-- Documented project deliverables and timeline outlines.
+- Strong conceptual understanding of ${detectedSkills[0] || 'core technologies'}.
+- Documented project setups and tool validations.
 
 # Weaknesses
-- Missing advanced framework architectures and enterprise design patterns.
-- Limited cloud deployment or microservices testing credentials.
-
-# ATS Analysis
-- **ATS Compatibility**: Moderate.
-- **Optimization Tip**: Ensure contact details are cleanly positioned at the header. Use standard bulleted achievement statements instead of paragraphs.
-
-# Job Match Recommendations
-- Junior Full Stack Web Developer (80% match)
-- Software Engineer Associate (75% match)
+- Lacks hands-on enterprise-level system deployment configurations.
+- Needs training in cloud infrastructure integrations.
 
 # Skill Gap Analysis
-- **Missing Skills**: ${skillGaps.join(', ')}
-- **Learning Recommendation**: Complete hands-on enterprise database configurations and CI/CD setup.
+- **Missing Technical Skills**: ${skillGaps.join(', ')}
+- **Recommended Upskilling**: Complete dynamic learning modules covering missing areas.
 
-# Recommended Certifications
-- Aurenza Certified Full Stack Professional
-- AWS Certified Cloud Practitioner
-
-# Recommended Learning Path
-1. Enroll in Aurenza dynamic training cohorts.
-2. Build 2 production-ready web deployments.
-3. Conduct 1-on-1 counselor callbacks and mock screening interviews.
-
-# Interview Questions
-1. How do you manage component-level states and page-load transitions in modern applications?
-2. What are the key differences between relational databases and local fallback stores?
+# Recommended Learning Roadmap
+- **30 Days**: ${roadmap30.join(' ')}
+- **60 Days**: ${roadmap60.join(' ')}
+- **90 Days**: ${roadmap90.join(' ')}
 
 # Final Verdict
-Good baseline candidate. Strongly recommended to proceed with upskilling through Aurenza Academy certifications to resolve remaining skill gaps and match premium job roles.`;
+Highly motivated candidate. Strongly recommended to pursue upskilling certifications at Aurenza Academy to bridge skills gaps and secure premium placement references.`;
 
   return {
+    name,
+    education,
+    certifications,
+    projects,
+    tools,
     detectedSkills,
     skillGaps,
     detectedDomain,
-    experienceLevel: content.includes('year') || content.includes('exp') ? 'Mid Level' : 'Entry Level / Fresher',
+    experienceLevel,
+    suggestedCareerPath,
     recommendedCourses: matchedCourses,
-    suggestedCareerPath: `${detectedDomain} Specialist`,
     roadmap,
+    roadmap30,
+    roadmap60,
+    roadmap90,
     improvementSuggestion: 'We suggest building 2 advanced open-source projects on GitHub, learning modern authentication models, and working extensively on quantitative aptitude skills to pass assessment checks.',
     fullReport
   };
@@ -317,7 +401,7 @@ Maintain context memory across messages. Limit general chat answers to 130 words
           })
         });
 
-        const result = await response.json();
+        const result = (await response.json()) as any;
         const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
         if (generatedText) {
           return { text: generatedText.trim() };
@@ -460,19 +544,42 @@ Maintain context memory across messages. Limit general chat answers to 130 words
 
 
   /**
-   * Analyzes resume text or file names
+   * Analyzes resume text or counselor questionnaires.
    */
-  analyzeResume: async (resumeText: string, fileName: string = ''): Promise<ResumeAnalysis> => {
+  analyzeResume: async (
+    resumeText: string,
+    fileName: string = '',
+    counselorProfile: any = null
+  ): Promise<ResumeAnalysis> => {
     // Delay for premium loading skeleton experience
     await new Promise(r => setTimeout(r, 1200));
 
     let textToAnalyze = resumeText || '';
-    if (fileName && !resumeText) {
+    if (fileName && !resumeText && !counselorProfile) {
       textToAnalyze = `Analysis of uploaded file: ${fileName}. Skills: JavaScript, React, CSS, Node, Git, communications. Looking for development.`;
     }
 
-    if (GEMINI_API_KEY && textToAnalyze.trim().length > 30) {
+    const hasInput = textToAnalyze.trim().length > 10 || counselorProfile;
+
+    if (GEMINI_API_KEY && hasInput) {
       try {
+        let userPrompt = '';
+        if (counselorProfile) {
+          userPrompt = `You are parsing a Career Discovery Questionnaire from a candidate without a resume:
+- Name: ${counselorProfile.name || 'Candidate'}
+- Experience Level: ${counselorProfile.experienceLevel || 'Fresher'}
+- Current Education: ${counselorProfile.education || 'Undergraduate'}
+- Current Job Role: ${counselorProfile.currentRole || 'Student'}
+- Career Goal: ${counselorProfile.careerGoal || 'Full Stack Developer'}
+- Preferred Technology: ${counselorProfile.preferredTech || 'Java'}
+- Interested Domain: ${counselorProfile.interestedDomain || 'Full Stack Development'}
+
+Please analyze this profile, identify skill gaps compared to industry expectations, recommend appropriate courses, and construct a 30-60-90 day study timeline.`;
+        } else {
+          userPrompt = `Analyze this resume content:
+${textToAnalyze}`;
+        }
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -481,40 +588,41 @@ Maintain context memory across messages. Limit general chat answers to 130 words
               {
                 role: 'user',
                 parts: [{
-                  text: `You are an advanced AI Resume Screening and Career Guidance Assistant for Aurenza Academy.
+                  text: `You are an advanced AI Career Analyst and Resume Diagnostics Assistant for Aurenza Academy.
                   
                   Primary responsibilities:
-                  1. Resume Analysis (extract education, experience, projects, skills).
-                  2. Resume Scoring (Technical Skills, Communication, Experience, Projects, Education, ATS Compatibility). Overall Resume Score and Employability Score out of 100. Explain scoring logic transparently.
-                  3. Skill Gap Analysis (identify missing/weak skills, learning roadmap).
-                  4. Job Matching (match with roles like Full Stack, DevOps, Cloud, AI, and provide match percentage and reasoning).
-                  5. ATS Optimization (keyword optimization, formatting suggestions).
-                  6. Career Guidance (course recommendations, learning paths).
-                  7. Resume Improvement Suggestions (better summaries, descriptions, action verbs).
-                  8. Interview Prep (technical, HR, scenario questions).
+                  1. Profile/Resume Analysis (extract education, certifications, projects, tools, skills).
+                  2. Skill Gap Analysis (identify missing/weak skills compared to standard industry expectations).
+                  3. Job Matching & Career Guidance (course recommendations, expected outcomes).
+                  4. Learning Roadmap Milestones (detailed steps for Month 1 / 30-Day, Month 2 / 60-Day, and Month 3 / 90-Day roadmaps).
                   
                   Rules:
-                  - Never invent experience.
-                  - Clearly separate facts from recommendations.
-                  - If info is missing, mention it explicitly.
-                  - Prioritize accuracy over assumptions.
+                  - Recommend ONLY courses from our ID list: "course-java", "course-frontend", "course-aiml", "course-aws", "course-azure", "course-devops", "course-microsoft-power-bi", "course-dsai", "course-csm", "course-pmp".
+                  - For each recommended course, explain WHY it is recommended, which skill gaps it covers, and the career outcome.
+                  - Provide clear steps for the 30-Day, 60-Day, and 90-Day Roadmap milestones.
                   
-                  Analyze this resume content and provide a JSON response matching exactly this format:
+                  Analyze the input and provide a JSON response matching exactly this format:
                   {
+                    "name": "Candidate Name (use provided or extract)",
+                    "education": "Education details",
+                    "certifications": ["Cert1", "Cert2"],
+                    "projects": ["Project1", "Project2"],
+                    "tools": ["Tool1", "Tool2"],
                     "detectedSkills": ["Skill1", "Skill2"],
                     "skillGaps": ["Gap1", "Gap2"],
                     "detectedDomain": "Domain Name",
                     "experienceLevel": "Entry/Mid/Senior",
-                    "suggestedCareerPath": "Job Title",
+                    "suggestedCareerPath": "Suggested Job Title",
                     "recommendedCourses": ["course-java", "course-frontend"],
-                    "improvementSuggestion": "Short tip",
+                    "improvementSuggestion": "Short upskilling/career tip",
+                    "roadmap30": ["Step1", "Step2"],
+                    "roadmap60": ["Step3", "Step4"],
+                    "roadmap90": ["Step5", "Step6"],
                     "fullReport": "A detailed report in markdown formatting following EXACTLY this structure:\n\n# Candidate Summary\n\n# Resume Score\n\nOverall Score: XX/100\n\n# Skills Identified\n\n# Strengths\n\n# Weaknesses\n\n# ATS Analysis\n\n# Job Match Recommendations\n\n# Skill Gap Analysis\n\n# Recommended Certifications\n\n# Recommended Learning Path\n\n# Interview Questions\n\n# Final Verdict"
                   }
                   
-                  Only recommend courses from our ID list: "course-java", "course-frontend", "course-aiml".
-                  
-                  Resume Content:
-                  ${textToAnalyze}`
+                  Input Details:
+                  ${userPrompt}`
                 }]
               }
             ],
@@ -523,7 +631,8 @@ Maintain context memory across messages. Limit general chat answers to 130 words
             }
           })
         });
-        const result = await response.json();
+
+        const result = (await response.json()) as any;
         const parsed = JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
         if (parsed) {
           const primaryCourseId = parsed.recommendedCourses[0] || 'course-java';
@@ -539,6 +648,6 @@ Maintain context memory across messages. Limit general chat answers to 130 words
     }
 
     // Fallback to local scanner
-    return scanLocalResume(textToAnalyze);
+    return scanLocalResume(textToAnalyze, counselorProfile);
   }
 };

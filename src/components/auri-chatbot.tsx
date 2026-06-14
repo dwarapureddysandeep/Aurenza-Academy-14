@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Bot, X, Send, Sparkles, AlertCircle, FileText, ArrowRight, CheckCircle2, ChevronRight, Paperclip, UploadCloud, File } from 'lucide-react';
+import { Bot, X, Send, Sparkles, AlertCircle, FileText, ArrowRight, CheckCircle2, ChevronRight, Paperclip, UploadCloud, File, Calendar, Award, Briefcase, GraduationCap, Code2 } from 'lucide-react';
 import { getAIChatResponseAction, analyzeResumeAction } from '@/lib/actions';
 import toast from 'react-hot-toast';
 import LoadingSpinner from './loading-spinner';
@@ -37,15 +37,36 @@ export default function AuriChatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'resume'>('chat');
 
-  // Resume Parsing States (Pasted tab)
+  // Resume Diagnostics AI Tab States
   const [resumeText, setResumeText] = useState('');
   const [parsing, setParsing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  
+  // Split Input & File upload states for diagnostics tab
+  const [diagFile, setDiagFile] = useState<any>(null); // { name, size, status, text, error }
+  const [diagDragActive, setDiagDragActive] = useState(false);
 
-  // File Upload & Session Memory States
+  // Counselor Discovery Form States (No Resume Mode)
+  const [isCounselorMode, setIsCounselorMode] = useState(false);
+  const [counselorStep, setCounselorStep] = useState(1); // Steps 1, 2, 3
+  const [counselorForm, setCounselorForm] = useState({
+    name: '',
+    experienceLevel: 'Entry Level / Fresher',
+    education: '',
+    currentRole: '',
+    careerGoal: '',
+    preferredTech: '',
+    interestedDomain: 'Full Stack Development'
+  });
+
+  // Report dashboard active section tab
+  const [activeReportTab, setActiveReportTab] = useState<'profile' | 'gaps' | 'courses' | 'roadmap'>('profile');
+
+  // File Upload states for general chat turn
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const diagFileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -66,6 +87,7 @@ export default function AuriChatbot() {
     };
   }, []);
 
+  // Main Chat Tab file uploads
   const handleFilesUpload = async (files: File[]) => {
     const supportedExtensions = ['.pdf', '.doc', '.docx', '.txt', '.pptx', '.ppt'];
     
@@ -146,10 +168,10 @@ export default function AuriChatbot() {
     }
   };
 
+  // Chat send action
   const handleSend = async (text: string) => {
     if (!text.trim() && uploadedFiles.every(f => f.status !== 'success')) return;
     
-    // Add user message
     const userMsg: Message = {
       id: `msg-${Date.now()}-u`,
       sender: 'user',
@@ -172,13 +194,11 @@ export default function AuriChatbot() {
       return;
     }
 
-    // Compile message history
     const history = messages.map(msg => ({
       role: msg.sender === 'user' ? 'user' as const : 'model' as const,
       text: msg.text
     }));
 
-    // Compile active document contexts
     const documentContext = uploadedFiles
       .filter(f => f.status === 'success' && f.text)
       .map(f => `[Document Content: ${f.name}]\n${f.text}`)
@@ -221,22 +241,122 @@ export default function AuriChatbot() {
     }
   };
 
-  const handleResumeSubmit = async (e: React.FormEvent) => {
+  // === RESUME DIAGNOSTICS UPLOAD AND ANALYTICS LOGIC ===
+  const handleDiagFileUpload = async (file: File) => {
+    const supportedExtensions = ['.pdf', '.doc', '.docx', '.txt', '.rtf'];
+    const extension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    
+    if (!supportedExtensions.includes(extension)) {
+      toast.error(`Unsupported format: ${file.name}. Supports PDF, DOC, DOCX, TXT, or RTF.`);
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(`File too large (Max 5MB)`);
+      return;
+    }
+
+    setDiagFile({ name: file.name, size: file.size, status: 'uploading' });
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/parse-document', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setDiagFile({ name: file.name, size: file.size, status: 'success', text: data.text });
+        setResumeText(data.text);
+        toast.success(`Uploaded & parsed ${file.name}`);
+      } else {
+        setDiagFile({ name: file.name, size: file.size, status: 'error', error: data.error });
+        toast.error(`Failed to parse file: ${data.error}`);
+      }
+    } catch (err) {
+      console.error(err);
+      setDiagFile({ name: file.name, size: file.size, status: 'error', error: 'Network error.' });
+      toast.error(`Network error uploading file.`);
+    }
+  };
+
+  const handleDiagDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!resumeText.trim()) return;
+    setDiagDragActive(true);
+  };
+
+  const handleDiagDragLeave = () => {
+    setDiagDragActive(false);
+  };
+
+  const handleDiagDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDiagDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleDiagFileUpload(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleResumeSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    let textToSubmit = resumeText;
+    let fileName = diagFile?.name || '';
+    let profile = null;
+
+    if (isCounselorMode) {
+      // Step validation checks
+      if (counselorStep === 1) {
+        if (!counselorForm.name.trim() || !counselorForm.education.trim()) {
+          toast.error("Please fill in Name and Education details.");
+          return;
+        }
+        setCounselorStep(2);
+        return;
+      }
+      if (counselorStep === 2) {
+        if (!counselorForm.currentRole.trim() || !counselorForm.careerGoal.trim()) {
+          toast.error("Please fill in Job Role and Career Goal.");
+          return;
+        }
+        setCounselorStep(3);
+        return;
+      }
+      // Step 3 submission
+      profile = counselorForm;
+      textToSubmit = '';
+    } else {
+      // Validate that at least one of upload file or paste text is provided (FEATURE 8 Fix)
+      const hasText = resumeText.trim().length > 10;
+      const hasSuccessFile = diagFile && diagFile.status === 'success' && diagFile.text;
+      
+      if (!hasText && !hasSuccessFile) {
+        toast.error("Please upload a resume file, paste resume text, or start Counselor Mode.");
+        return;
+      }
+      if (hasSuccessFile && !textToSubmit) {
+        textToSubmit = diagFile.text;
+      }
+    }
 
     setParsing(true);
     setAnalysisResult(null);
+
     try {
-      const result = await analyzeResumeAction(resumeText, 'pasted_resume.txt');
+      const result = await analyzeResumeAction(textToSubmit, fileName, profile);
       if (result) {
         setAnalysisResult(result);
-        toast.success("Resume Diagnostics Complete!");
+        setActiveReportTab('profile'); // Reset active tab in result dashboard
+        toast.success("Profile Diagnostics Complete!");
       } else {
-        toast.error("Failed to analyze resume. Please check your network and try again.");
+        toast.error("Diagnostics failed. Please check your connection.");
       }
     } catch (err) {
-      console.error("Resume analysis failed:", err);
+      console.error("Diagnostics server action failed:", err);
       toast.error("An error occurred during resume diagnostics.");
     } finally {
       setParsing(false);
@@ -273,13 +393,13 @@ export default function AuriChatbot() {
       {/* 2. CHAT OVERLAY BOX CONTAINER */}
       {isOpen && (
         <div 
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
+          onDragOver={activeTab === 'chat' ? handleDragOver : undefined}
+          onDragLeave={activeTab === 'chat' ? handleDragLeave : undefined}
+          onDrop={activeTab === 'chat' ? handleDrop : undefined}
           className="floating-chatbot border border-borderLight shadow-2xl bg-white flex flex-col relative animate-fade-up"
         >
           
-          {/* Drag & Drop Overlay Visuals */}
+          {/* Main Chat Drag & Drop Overlay */}
           {isDragging && activeTab === 'chat' && (
             <div className="absolute inset-0 bg-primary/10 backdrop-blur-[1px] border-2 border-dashed border-primary z-40 flex flex-col items-center justify-center pointer-events-none">
               <UploadCloud className="w-12 h-12 text-primary animate-bounce" />
@@ -379,100 +499,258 @@ export default function AuriChatbot() {
                 <div ref={messagesEndRef} />
               </>
             ) : (
-              /* AI RESUME DIAGNOSTIC TAB (PASTE METHOD) */
+              /* === RESUME DIAGNOSTICS AI TAB === */
               <div className="space-y-4 text-textSecondary animate-fade-up">
                 
                 {analysisResult ? (
-                  /* DIAGNOSTICS COMPLETED RESULTS VIEW */
+                  /* DIAGNOSTICS COMPLETED RESULTS VIEW (FEATURE 7 Tabbed Report Cards) */
                   <div className="space-y-4">
-                    <div className="p-3 bg-successGreen/5 border border-successGreen/25 rounded-2xl flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-successGreen shrink-0" />
-                      <span className="text-xs font-bold text-successGreen">Analysis complete. Profile matched.</span>
+                    <div className="p-3 bg-successGreen/5 border border-successGreen/20 rounded-2xl flex items-center gap-2">
+                      <CheckCircle2 className="w-4.5 h-4.5 text-successGreen shrink-0" />
+                      <span className="text-xs font-bold text-successGreen">Screening diagnostics parsed successfully.</span>
                     </div>
 
-                    <div className="space-y-3.5">
-                      {/* Domain and Experience */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-sectionBg border border-borderLight p-2.5 rounded-xl text-center">
-                          <p className="text-[9px] text-textSecondary font-bold uppercase tracking-wider">Experience Level</p>
-                          <p className="text-xs text-textPrimary font-extrabold mt-0.5">{analysisResult.experienceLevel}</p>
-                        </div>
-                        <div className="bg-sectionBg border border-borderLight p-2.5 rounded-xl text-center">
-                          <p className="text-[9px] text-textSecondary font-bold uppercase tracking-wider">Target Domain</p>
-                          <p className="text-xs text-textPrimary font-extrabold mt-0.5 truncate">{analysisResult.suggestedCareerPath.split(' ')[0]}</p>
-                        </div>
-                      </div>
-
-                      {/* Detected Badges */}
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-successGreen">Detected Skills</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {analysisResult.detectedSkills.map((s: string, i: number) => (
-                            <span key={i} className="px-2.5 py-1 rounded bg-successGreen/5 text-successGreen border border-successGreen/10 text-[9px] font-bold">{s}</span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Skill Gaps BADGES */}
-                      <div className="space-y-1.5">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5 text-primary" /> High Priority Skill Gaps
-                        </p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {analysisResult.skillGaps.map((s: string, i: number) => (
-                            <span key={i} className="px-2.5 py-1 rounded bg-primary/5 text-primary border border-primary/10 text-[9px] font-bold">{s}</span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Recommended Program */}
-                      <div className="bg-sectionBg border border-borderLight p-3.5 rounded-2xl space-y-2 shadow-soft">
-                        <p className="text-[9px] text-primary font-bold uppercase tracking-widest leading-none">Recommended Career Booster</p>
-                        <h5 className="text-xs font-black text-textPrimary heading flex items-center gap-1.5 mt-1">
-                          {analysisResult.roadmap.title}
-                        </h5>
+                    {/* Dashboard Tab Menu */}
+                    <div className="flex gap-1 border-b border-borderLight pb-2 overflow-x-auto scrollbar-none select-none">
+                      {[
+                        { id: 'profile', label: 'Summary' },
+                        { id: 'gaps', label: 'Skill Gaps' },
+                        { id: 'courses', label: 'Course Match' },
+                        { id: 'roadmap', label: 'Timeline' }
+                      ].map(tab => (
                         <button
+                          key={tab.id}
                           type="button"
-                          onClick={() => triggerDirectCounseling(analysisResult.roadmap.title.split(' Roadmap')[0])}
-                          className="w-full mt-2 py-2.5 rounded-[14px] bg-primary hover:bg-primaryHover transition text-center text-[10px] font-black text-white flex items-center justify-center gap-1.5 shadow-soft hover:shadow-glowPurple"
+                          onClick={() => setActiveReportTab(tab.id as any)}
+                          className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition shrink-0 ${
+                            activeReportTab === tab.id
+                              ? 'bg-primary text-white shadow-soft'
+                              : 'bg-sectionBg text-textSecondary hover:bg-neutral-100 hover:text-textPrimary'
+                          }`}
                         >
-                          Book Counseling for program <ChevronRight className="w-3 h-3" />
+                          {tab.label}
                         </button>
-                      </div>
+                      ))}
+                    </div>
 
-                      {/* Dynamic Roadmap Steps */}
-                      <div className="space-y-2">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Suggested Study Timeline</p>
-                        <div className="border-l border-borderLight pl-3 space-y-2 ml-1">
-                          {analysisResult.roadmap.steps.slice(0, 3).map((step: string, i: number) => (
-                            <div key={i} className="relative text-[10px] text-textSecondary">
-                              <span className="absolute -left-[16px] top-1 w-2.5 h-2.5 rounded-full bg-primary border-2 border-white"></span>
-                              {step}
+                    {/* Report Panels */}
+                    {activeReportTab === 'profile' && (
+                      <div className="space-y-3.5 animate-fade-up">
+                        {/* Summary Card */}
+                        <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-3 shadow-soft">
+                          <h5 className="text-xs font-black text-textPrimary uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-borderLight pb-1.5 leading-none">
+                            <GraduationCap className="w-4 h-4 text-primary" /> Candidate Summary
+                          </h5>
+                          <div className="grid grid-cols-2 gap-2 text-[10px]">
+                            <div>
+                              <span className="text-neutral-400 font-bold block">Name</span>
+                              <strong className="text-textPrimary">{analysisResult.name || 'Extracted Candidate'}</strong>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Detailed AI Report */}
-                      {analysisResult.fullReport && (
-                        <div className="space-y-2">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Detailed AI Screening Report</p>
-                          <div className="bg-sectionBg border border-borderLight p-3.5 rounded-2xl max-h-[220px] overflow-y-auto font-mono text-[9px] text-textPrimary leading-relaxed whitespace-pre-wrap">
-                            {analysisResult.fullReport}
+                            <div>
+                              <span className="text-neutral-400 font-bold block">Experience</span>
+                              <strong className="text-textPrimary">{analysisResult.experienceLevel || 'Entry Level'}</strong>
+                            </div>
+                            <div>
+                              <span className="text-neutral-400 font-bold block">Education</span>
+                              <strong className="text-textPrimary">{analysisResult.education || 'Undergraduate'}</strong>
+                            </div>
+                            <div>
+                              <span className="text-neutral-400 font-bold block">Domain Focus</span>
+                              <strong className="text-textPrimary truncate block">{analysisResult.detectedDomain || 'Software Eng.'}</strong>
+                            </div>
                           </div>
                         </div>
-                      )}
 
-                      <button
-                        onClick={() => {
-                          setAnalysisResult(null);
-                          setResumeText('');
-                        }}
-                        className="w-full py-2.5 rounded-xl bg-sectionBg hover:bg-white border border-borderLight text-center text-xs font-bold text-textPrimary transition"
-                      >
-                        Reset & Upload Again
-                      </button>
-                    </div>
+                        {/* Projects & Tools Card */}
+                        <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-3 shadow-soft">
+                          <h5 className="text-xs font-black text-textPrimary uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-borderLight pb-1.5 leading-none">
+                            <Code2 className="w-4 h-4 text-primary" /> Stack & Projects
+                          </h5>
+                          <div className="space-y-2 text-[10px]">
+                            {analysisResult.projects && analysisResult.projects.length > 0 && (
+                              <div>
+                                <span className="text-neutral-400 font-bold block mb-0.5">Projects Profile</span>
+                                <ul className="list-disc list-inside space-y-0.5 text-textPrimary">
+                                  {analysisResult.projects.map((p: string, idx: number) => (
+                                    <li key={idx} className="truncate">{p}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {analysisResult.tools && analysisResult.tools.length > 0 && (
+                              <div>
+                                <span className="text-neutral-400 font-bold block mb-1">Developer Tools</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {analysisResult.tools.map((t: string, idx: number) => (
+                                    <span key={idx} className="px-2 py-0.5 rounded bg-neutral-200/60 text-textSecondary text-[9px] font-bold border border-neutral-300/30">{t}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1 bg-primary/5 p-3 rounded-2xl border border-primary/10">
+                          <span className="text-[9px] font-black uppercase text-primary tracking-widest block">Career Analyst Tip</span>
+                          <p className="text-[10px] text-textSecondary leading-relaxed">{analysisResult.improvementSuggestion}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeReportTab === 'gaps' && (
+                      <div className="space-y-3.5 animate-fade-up">
+                        {/* Detected Skills */}
+                        <div className="bg-successGreen/5 border border-successGreen/10 p-4 rounded-2xl space-y-2.5 shadow-soft">
+                          <h5 className="text-xs font-black text-successGreen uppercase tracking-widest flex items-center gap-1.5 border-b border-successGreen/10 pb-1.5 leading-none">
+                            <CheckCircle2 className="w-4 h-4 text-successGreen" /> Current Skills
+                          </h5>
+                          <div className="flex flex-wrap gap-1.5">
+                            {analysisResult.detectedSkills.map((s: string, idx: number) => (
+                              <span key={idx} className="px-2.5 py-1 rounded-lg bg-successGreen/10 text-successGreen border border-successGreen/20 text-[9px] font-black uppercase tracking-wider">{s}</span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Missing Skills Gap Card */}
+                        <div className="bg-primary/5 border border-primary/10 p-4 rounded-2xl space-y-2.5 shadow-soft">
+                          <h5 className="text-xs font-black text-primary uppercase tracking-widest flex items-center gap-1.5 border-b border-primary/10 pb-1.5 leading-none">
+                            <AlertCircle className="w-4 h-4 text-primary" /> Target Skill Gaps
+                          </h5>
+                          <div className="flex flex-wrap gap-1.5">
+                            {analysisResult.skillGaps.map((s: string, idx: number) => (
+                              <span key={idx} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary border border-primary/20 text-[9px] font-black uppercase tracking-wider">{s}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeReportTab === 'courses' && (
+                      <div className="space-y-3.5 animate-fade-up">
+                        {analysisResult.recommendedCourses.map((courseId: string, idx: number) => {
+                          // Standard catalog helper naming mapping
+                          let courseName = "Aurenza Skill Program";
+                          if (courseId === 'course-java') courseName = "Java Full Stack Development";
+                          else if (courseId === 'course-frontend') courseName = "Frontend Development (React & Next.js)";
+                          else if (courseId === 'course-aiml') courseName = "AI & Machine Learning Engineering";
+                          else if (courseId === 'course-aws') courseName = "AWS Solutions Architect";
+                          else if (courseId === 'course-azure') courseName = "Microsoft Azure Administrator";
+                          else if (courseId === 'course-devops') courseName = "DevOps Engineer Program";
+                          else if (courseId === 'course-microsoft-power-bi') courseName = "Microsoft Power BI";
+                          else if (courseId === 'course-dsai') courseName = "Data Science & AI Bootcamp";
+                          else if (courseId === 'course-csm') courseName = "Certified ScrumMaster (CSM)";
+                          else if (courseId === 'course-pmp') courseName = "PMP Certification";
+
+                          return (
+                            <div key={idx} className="bg-sectionBg border border-borderLight p-4 rounded-2xl space-y-2.5 shadow-soft">
+                              <span className="text-[9px] font-black text-primary uppercase tracking-widest block">Recommended Course</span>
+                              <h5 className="text-xs font-black text-textPrimary leading-tight heading border-b border-borderLight pb-1.5 flex items-center gap-1.5">
+                                <Award className="w-4.5 h-4.5 text-primary shrink-0" />
+                                {courseName}
+                              </h5>
+                              
+                              <div className="space-y-1.5 text-[10px] leading-relaxed">
+                                <p className="text-textSecondary">
+                                  <strong className="text-textPrimary font-bold block mb-0.5">Analyst Reason:</strong>
+                                  You currently lack hands-on experience in the key methodologies for this domain. This course covers your missing frameworks.
+                                </p>
+                                
+                                <div className="pt-1">
+                                  <span className="text-neutral-400 font-bold block mb-0.5">Career Outcome</span>
+                                  <strong className="text-textPrimary text-[9px] font-black uppercase tracking-wider">{analysisResult.suggestedCareerPath}</strong>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => triggerDirectCounseling(courseName)}
+                                className="w-full mt-2 py-2.5 rounded-[12px] bg-primary hover:bg-primaryHover transition text-center text-[10px] font-black text-white flex items-center justify-center gap-1 shadow-soft hover:shadow-glowPurple"
+                              >
+                                Book Counseling Program <ChevronRight className="w-3 h-3" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {activeReportTab === 'roadmap' && (
+                      <div className="space-y-3.5 animate-fade-up">
+                        <div className="bg-sectionBg border border-borderLight p-4 rounded-2xl shadow-soft space-y-4">
+                          <h5 className="text-xs font-black text-textPrimary uppercase tracking-widest text-primary flex items-center gap-1.5 border-b border-borderLight pb-1.5 leading-none">
+                            <Calendar className="w-4 h-4 text-primary" /> Learning Milestones
+                          </h5>
+                          
+                          {/* Visual Timeline */}
+                          <div className="relative border-l border-borderLight pl-4 ml-2.5 space-y-4">
+                            {/* 30 Day */}
+                            {analysisResult.roadmap30 && (
+                              <div className="relative text-[10px] text-textSecondary">
+                                <span className="absolute -left-[21px] top-0.5 w-3 h-3 rounded-full bg-primary border-2 border-white flex items-center justify-center"></span>
+                                <strong className="text-textPrimary block mb-0.5 uppercase tracking-wide">Month 1 (Days 1-30)</strong>
+                                <ul className="list-disc list-inside space-y-0.5">
+                                  {analysisResult.roadmap30.map((step: string, i: number) => (
+                                    <li key={i}>{step}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* 60 Day */}
+                            {analysisResult.roadmap60 && (
+                              <div className="relative text-[10px] text-textSecondary">
+                                <span className="absolute -left-[21px] top-0.5 w-3 h-3 rounded-full bg-primary border-2 border-white flex items-center justify-center"></span>
+                                <strong className="text-textPrimary block mb-0.5 uppercase tracking-wide">Month 2 (Days 31-60)</strong>
+                                <ul className="list-disc list-inside space-y-0.5">
+                                  {analysisResult.roadmap60.map((step: string, i: number) => (
+                                    <li key={i}>{step}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* 90 Day */}
+                            {analysisResult.roadmap90 && (
+                              <div className="relative text-[10px] text-textSecondary">
+                                <span className="absolute -left-[21px] top-0.5 w-3 h-3 rounded-full bg-primary border-2 border-white flex items-center justify-center"></span>
+                                <strong className="text-textPrimary block mb-0.5 uppercase tracking-wide">Month 3 (Days 61-90)</strong>
+                                <ul className="list-disc list-inside space-y-0.5">
+                                  {analysisResult.roadmap90.map((step: string, i: number) => (
+                                    <li key={i}>{step}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Extended Text Report */}
+                        {analysisResult.fullReport && (
+                          <details className="bg-sectionBg border border-borderLight p-3.5 rounded-2xl shadow-soft group">
+                            <summary className="text-[10px] font-black uppercase text-primary tracking-wider cursor-pointer list-none flex items-center justify-between">
+                              Show Extended ATS Screening Report
+                              <ChevronRight className="w-3.5 h-3.5 group-open:rotate-90 transition" />
+                            </summary>
+                            <div className="mt-3 bg-white border border-borderLight p-3 rounded-xl max-h-[180px] overflow-y-auto font-mono text-[9px] text-textPrimary leading-relaxed whitespace-pre-wrap">
+                              {analysisResult.fullReport}
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={() => {
+                        setAnalysisResult(null);
+                        setResumeText('');
+                        setDiagFile(null);
+                        setIsCounselorMode(false);
+                        setCounselorStep(1);
+                      }}
+                      className="w-full py-2.5 rounded-xl bg-sectionBg hover:bg-white border border-borderLight text-center text-xs font-bold text-textPrimary transition"
+                    >
+                      Reset & Upload Again
+                    </button>
                   </div>
                 ) : parsing ? (
                   /* SCANNING ANIMATION LOADER */
@@ -482,42 +760,259 @@ export default function AuriChatbot() {
                       <span className="absolute inset-0 rounded-full border border-primary border-t-transparent animate-spin"></span>
                     </div>
                     <div className="space-y-2">
-                      <h4 className="text-sm font-bold text-textPrimary leading-none heading">Scanning Resume Semantics...</h4>
+                      <h4 className="text-sm font-bold text-textPrimary leading-none heading">Diagnosing Profile Semantics...</h4>
                       <p className="text-[10px] text-textSecondary max-w-[200px] leading-normal mx-auto">
-                        Extracting technical expertise and contrasting with corporate certification syllabi.
+                        Contrasting candidate background with industry-standard certification course metrics.
                       </p>
                     </div>
                   </div>
-                ) : (
-                  /* SUBMIT FORM VIEW */
-                  <form onSubmit={handleResumeSubmit} className="space-y-4">
-                    <div className="space-y-1">
-                      <p className="text-xs text-textSecondary leading-normal">
-                        Paste your current resume content (or describe your skills) below. Auri AI will identify your gaps and build custom syllabus roadmaps.
-                      </p>
+                ) : isCounselorMode ? (
+                  /* === CAREER COUNSELORdiscovery FORM (No Resume Mode) === */
+                  <div className="space-y-3.5 animate-fade-up">
+                    <div className="flex items-center justify-between border-b border-borderLight pb-2">
+                      <h5 className="text-xs font-black uppercase tracking-wider text-primary">Discovery Steps ({counselorStep}/3)</h5>
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setIsCounselorMode(false);
+                          setCounselorStep(1);
+                        }}
+                        className="text-[10px] text-textSecondary hover:text-red-500 font-bold"
+                      >
+                        Cancel
+                      </button>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
+                    <form 
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleResumeSubmit();
+                      }}
+                      className="space-y-3"
+                    >
+                      {counselorStep === 1 && (
+                        <div className="space-y-3 animate-fade-up">
+                          <p className="text-[10px] text-textSecondary">Provide your basic profile credentials to tailor your recommended paths.</p>
+                          <div>
+                            <label className="text-[9px] font-black uppercase text-neutral-400 block mb-1">Your Name</label>
+                            <input
+                              type="text"
+                              required
+                              value={counselorForm.name}
+                              onChange={(e) => setCounselorForm(prev => ({ ...prev, name: e.target.value }))}
+                              placeholder="e.g. Rohit Kumar"
+                              className="bg-white border border-borderLight rounded-xl px-3 py-2 text-xs text-textPrimary w-full focus:outline-none focus:border-primary/60 font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-black uppercase text-neutral-400 block mb-1">Experience Level</label>
+                            <select
+                              value={counselorForm.experienceLevel}
+                              onChange={(e) => setCounselorForm(prev => ({ ...prev, experienceLevel: e.target.value }))}
+                              className="bg-white border border-borderLight rounded-xl px-3 py-2.5 text-xs text-textPrimary w-full focus:outline-none focus:border-primary/60 font-sans"
+                            >
+                              <option>Entry Level / Fresher</option>
+                              <option>Mid Level / Experienced</option>
+                              <option>Senior Level</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-black uppercase text-neutral-400 block mb-1">Current Education</label>
+                            <input
+                              type="text"
+                              required
+                              value={counselorForm.education}
+                              onChange={(e) => setCounselorForm(prev => ({ ...prev, education: e.target.value }))}
+                              placeholder="e.g. B.Tech Computer Science / MCA"
+                              className="bg-white border border-borderLight rounded-xl px-3 py-2 text-xs text-textPrimary w-full focus:outline-none focus:border-primary/60 font-sans"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {counselorStep === 2 && (
+                        <div className="space-y-3 animate-fade-up">
+                          <div>
+                            <label className="text-[9px] font-black uppercase text-neutral-400 block mb-1">Current Job Role</label>
+                            <input
+                              type="text"
+                              required
+                              value={counselorForm.currentRole}
+                              onChange={(e) => setCounselorForm(prev => ({ ...prev, currentRole: e.target.value }))}
+                              placeholder="e.g. Student / Junior System Engineer"
+                              className="bg-white border border-borderLight rounded-xl px-3 py-2 text-xs text-textPrimary w-full focus:outline-none focus:border-primary/60 font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-black uppercase text-neutral-400 block mb-1">Target Career Goal</label>
+                            <input
+                              type="text"
+                              required
+                              value={counselorForm.careerGoal}
+                              onChange={(e) => setCounselorForm(prev => ({ ...prev, careerGoal: e.target.value }))}
+                              placeholder="e.g. AWS Cloud Engineer / Lead Java Developer"
+                              className="bg-white border border-borderLight rounded-xl px-3 py-2 text-xs text-textPrimary w-full focus:outline-none focus:border-primary/60 font-sans"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {counselorStep === 3 && (
+                        <div className="space-y-3 animate-fade-up">
+                          <div>
+                            <label className="text-[9px] font-black uppercase text-neutral-400 block mb-1">Preferred Technology</label>
+                            <input
+                              type="text"
+                              required
+                              value={counselorForm.preferredTech}
+                              onChange={(e) => setCounselorForm(prev => ({ ...prev, preferredTech: e.target.value }))}
+                              placeholder="e.g. Java, Python, SQL, Docker"
+                              className="bg-white border border-borderLight rounded-xl px-3 py-2 text-xs text-textPrimary w-full focus:outline-none focus:border-primary/60 font-sans"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-black uppercase text-neutral-400 block mb-1">Interested Domain</label>
+                            <select
+                              value={counselorForm.interestedDomain}
+                              onChange={(e) => setCounselorForm(prev => ({ ...prev, interestedDomain: e.target.value }))}
+                              className="bg-white border border-borderLight rounded-xl px-3 py-2.5 text-xs text-textPrimary w-full focus:outline-none focus:border-primary/60 font-sans"
+                            >
+                              <option>Full Stack Development</option>
+                              <option>Cloud Computing</option>
+                              <option>DevOps</option>
+                              <option>Data Analytics</option>
+                              <option>AI & Machine Learning</option>
+                              <option>Cyber Security</option>
+                              <option>Testing</option>
+                            </select>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 pt-2">
+                        {counselorStep > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setCounselorStep(prev => prev - 1)}
+                            className="flex-1 py-3 border border-borderLight bg-white rounded-xl text-center text-xs font-bold text-textSecondary transition hover:text-textPrimary"
+                          >
+                            Back
+                          </button>
+                        )}
+                        <button
+                          type="submit"
+                          className="flex-[2] py-3 bg-primary hover:bg-primaryHover text-white text-xs font-black rounded-xl transition text-center shadow-soft hover:shadow-glowPurple flex items-center justify-center gap-1.5"
+                        >
+                          {counselorStep === 3 ? (
+                            <>
+                              <Sparkles className="w-4 h-4" /> Run Discovery Map
+                            </>
+                          ) : (
+                            "Continue"
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                ) : (
+                  /* === DIAGNOSTICS INPUT ENTRY STATE === */
+                  <div className="space-y-4 animate-fade-up">
+                    
+                    {/* File Upload Drag Area (FEATURE 1 Browse / Drag & Drop) */}
+                    <div 
+                      onDragOver={handleDiagDragOver}
+                      onDragLeave={handleDiagDragLeave}
+                      onDrop={handleDiagDrop}
+                      onClick={() => diagFileInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-2xl p-4.5 text-center cursor-pointer transition ${
+                        diagDragActive 
+                          ? 'border-primary bg-primary/5' 
+                          : 'border-borderLight hover:border-primary/55 hover:bg-sectionBg'
+                      }`}
+                    >
+                      <input
+                        type="file"
+                        ref={diagFileInputRef}
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            handleDiagFileUpload(e.target.files[0]);
+                          }
+                        }}
+                        className="hidden"
+                        accept=".pdf,.doc,.docx,.txt,.rtf"
+                      />
+                      <UploadCloud className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+                      <p className="text-xs font-black text-textPrimary leading-none heading">Upload Resume Document</p>
+                      <p className="text-[9px] text-textSecondary mt-1">Supports PDF, DOC, DOCX, TXT, RTF (Max 5MB)</p>
+                    </div>
+
+                    {/* File uploading progress card */}
+                    {diagFile && (
+                      <div className={`p-3 rounded-2xl border text-[10px] font-bold flex items-center justify-between ${
+                        diagFile.status === 'error' 
+                          ? 'bg-red-50 border-red-200 text-red-600' 
+                          : diagFile.status === 'uploading' 
+                            ? 'bg-neutral-50 border-neutral-200 text-neutral-500 animate-pulse' 
+                            : 'bg-primary/5 border-primary/10 text-primary'
+                      }`}>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <FileText className="w-4 h-4 shrink-0" />
+                          <span className="truncate max-w-[150px]">{diagFile.name}</span>
+                        </div>
+                        {diagFile.status === 'uploading' ? (
+                          <LoadingSpinner size="xs" />
+                        ) : (
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              setDiagFile(null);
+                              setResumeText('');
+                            }}
+                            className="text-textSecondary hover:text-red-500 transition"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Manual Paste Textarea option */}
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase text-neutral-400 block tracking-wide">Or Paste Resume Text</label>
                       <textarea
-                        required
-                        rows={6}
+                        rows={4}
                         value={resumeText}
                         onChange={(e) => setResumeText(e.target.value)}
-                        placeholder="Paste your resume text here... E.g.
+                        placeholder="Paste resume details... E.g.
 Name: Rohit Kumar
-Skills: JavaScript, HTML, CSS, React basics.
-Experience: Fresh Graduate looking for entry software developer roles..."
-                        className="glass-input text-xs sm:text-sm resize-none h-[180px] font-sans"
+Skills: SQL basics, Python syntax, Excel.
+Goal: Become a Data Analyst."
+                        className="bg-white border border-borderLight rounded-2xl p-3 text-xs text-textPrimary w-full focus:outline-none focus:border-primary/60 font-sans resize-none h-[110px]"
                       />
                     </div>
 
-                    <button
-                      type="submit"
-                      className="w-full py-3.5 rounded-[14px] bg-primary hover:bg-primaryHover transition text-center text-xs font-black text-white flex items-center justify-center gap-1.5 shadow-soft hover:shadow-glowPurple"
-                    >
-                      <FileText className="w-4 h-4" /> Start Profile Diagnosis
-                    </button>
-                  </form>
+                    {/* Action buttons */}
+                    <div className="space-y-2 pt-1.5">
+                      <button
+                        type="button"
+                        onClick={handleResumeSubmit}
+                        className="w-full py-3 rounded-xl bg-primary hover:bg-primaryHover text-white text-xs font-black transition text-center shadow-soft hover:shadow-glowPurple flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-4 h-4" /> Start Profile Diagnosis
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCounselorMode(true);
+                          setCounselorStep(1);
+                        }}
+                        className="w-full py-3 rounded-xl bg-sectionBg hover:bg-neutral-100 border border-borderLight text-center text-xs font-bold text-textPrimary transition"
+                      >
+                        No Resume? Try Counselor Discovery Mode
+                      </button>
+                    </div>
+                  </div>
                 )}
 
               </div>
@@ -525,7 +1020,7 @@ Experience: Fresh Graduate looking for entry software developer roles..."
 
           </div>
 
-          {/* Uploaded File Cards Panel */}
+          {/* Uploaded File Cards Panel (Only on Counsellor Chat Tab) */}
           {activeTab === 'chat' && uploadedFiles.length > 0 && (
             <div className="px-3.5 py-2.5 bg-sectionBg/80 border-t border-borderLight flex flex-wrap gap-2 max-h-[120px] overflow-y-auto z-10">
               {uploadedFiles.map(file => {
@@ -572,7 +1067,6 @@ Experience: Fresh Graduate looking for entry software developer roles..."
               }}
               className="bg-sectionBg border-t border-borderLight px-3.5 py-3.5 flex items-center gap-2 relative z-10"
             >
-              {/* Attachment trigger */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
