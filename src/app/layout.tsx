@@ -5,6 +5,7 @@ import Footer from "@/components/footer";
 import LeadModal from "@/components/lead-modal";
 import AuriChatbot from "@/components/auri-chatbot";
 import { Toaster } from "react-hot-toast";
+import { getCurrentUser } from "@/lib/actions";
 
 export const metadata: Metadata = {
   title: "Aurenza Academy - Premium Global IT & AI Career Certifications",
@@ -42,11 +43,13 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const currentUser = await getCurrentUser();
+
   return (
     <html lang="en">
       <body className="antialiased min-h-screen flex flex-col justify-between relative bg-enterpriseBg">
@@ -75,7 +78,7 @@ export default function RootLayout({
           }}
         />
 
-        <NavBar />
+        <NavBar currentUser={currentUser} />
         
         <main className="flex-1 w-full relative z-10">
           {children}

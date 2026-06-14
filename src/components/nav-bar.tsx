@@ -53,28 +53,24 @@ const featuredCourses = [
   }
 ];
 
-export default function NavBar() {
+export default function NavBar({ currentUser }: { currentUser?: any }) {
   const router = useRouter();
   const pathname = usePathname();
   
   const [megaOpen, setMegaOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileCourses, setMobileCourses] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(currentUser || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   
   // Sticky Scroll State
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Fetch session on mount
+  // Sync state if session prop changes (e.g. log in, log out)
   useEffect(() => {
-    async function loadSession() {
-      const activeUser = await getCurrentUser();
-      setUser(activeUser);
-    }
-    loadSession();
-  }, []);
+    setUser(currentUser || null);
+  }, [currentUser]);
 
   // Listen to window scroll events to trigger sticky header animation
   useEffect(() => {
