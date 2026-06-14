@@ -9,12 +9,13 @@ export const metadata = {
 };
 
 interface PageProps {
-  searchParams: Promise<{ search?: string }>;
+  searchParams: Promise<{ search?: string; category?: string }>;
 }
 
 export default async function CoursesCatalogPage({ searchParams }: PageProps) {
   const resolvedParams = await searchParams;
   const search = resolvedParams?.search || '';
+  const category = resolvedParams?.category || '';
   const courses = await db.course.findMany();
 
   return (
@@ -38,7 +39,7 @@ export default async function CoursesCatalogPage({ searchParams }: PageProps) {
 
         {/* Dynamic Catalog Filter Grid */}
         <Suspense fallback={<div className="text-center py-12 text-xs font-bold text-textSecondary animate-pulse">Loading course catalog...</div>}>
-          <CourseFilterGrid initialCourses={courses} searchParam={search} />
+          <CourseFilterGrid initialCourses={courses} searchParam={search} initialCategory={category} />
         </Suspense>
 
       </div>

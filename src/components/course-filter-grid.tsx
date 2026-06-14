@@ -8,10 +8,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface CourseFilterGridProps {
   initialCourses: any[];
   searchParam?: string;
+  initialCategory?: string;
 }
 
-export default function CourseFilterGrid({ initialCourses, searchParam = '' }: CourseFilterGridProps) {
-  const [selectedCategory, setSelectedCategory] = useState('All');
+export default function CourseFilterGrid({ 
+  initialCourses, 
+  searchParam = '', 
+  initialCategory = 'All' 
+}: CourseFilterGridProps) {
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'All');
   const [searchQuery, setSearchQuery] = useState(searchParam);
   const [showSearch, setShowSearch] = useState(!!searchParam);
   const [activePreviewCourse, setActivePreviewCourse] = useState<any | null>(null);
@@ -23,6 +28,11 @@ export default function CourseFilterGrid({ initialCourses, searchParam = '' }: C
       setShowSearch(true);
     }
   }, [searchParam]);
+
+  // Sync state if initialCategory prop changes (e.g., clicking category link in header)
+  useEffect(() => {
+    setSelectedCategory(initialCategory || 'All');
+  }, [initialCategory]);
 
   // Map category tabs exactly like Upgrad screenshot 2
   const categories = [
